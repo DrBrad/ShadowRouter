@@ -6,7 +6,7 @@ import unet.kad4.messages.inter.Message;
 import unet.kad4.messages.inter.MessageType;
 import unet.kad4.messages.inter.MethodMessageBase;
 
-@Message(method = "find_circuit", type = MessageType.REQ_MSG)
+@Message(method = "get_circuit", type = MessageType.REQ_MSG)
 public class GetCircuitRequest extends MethodMessageBase {
 
     //private TunnelType tunnelType;
