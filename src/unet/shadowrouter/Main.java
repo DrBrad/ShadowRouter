@@ -1,7 +1,18 @@
 package unet.shadowrouter;
 
 import unet.kad4.Kademlia;
+import unet.shadowrouter.kad.SRequestListener;
 import unet.shadowrouter.kad.messages.*;
+
+import javax.crypto.KeyAgreement;
+import javax.crypto.interfaces.DHPublicKey;
+import javax.crypto.spec.DHParameterSpec;
+import java.security.KeyFactory;
+import java.security.KeyPair;
+import java.security.KeyPairGenerator;
+import java.security.PublicKey;
+import java.security.spec.X509EncodedKeySpec;
+import java.util.Base64;
 
 public class Main {
 
@@ -146,11 +157,13 @@ public class Main {
 
     public static void main(String[] args)throws Exception {
         Kademlia kad = new Kademlia();
-        kad.registerRequestListener(GetCircuitRequest.class);
-        kad.registerRequestListener(GetCircuitResponse.class);
+        kad.registerRequestListener(new SRequestListener());
 
-        kad.registerRequestListener(PutCircuitRequest.class);
-        kad.registerRequestListener(PutCircuitResponse.class);
+        kad.registerMessage(GetCircuitRequest.class);
+        kad.registerMessage(GetCircuitResponse.class);
+
+        kad.registerMessage(PutCircuitRequest.class);
+        kad.registerMessage(PutCircuitResponse.class);
 
         kad.bind();
 
@@ -160,6 +173,64 @@ public class Main {
         //kad.join(6881, );
 
         //WE COULD HAVE A REQUEST SIGN - IN WHICH A > SIGNS FOR B
+
+
+
+
+
+
+
+
+        // Generate Alice's key pair
+        KeyPairGenerator aliceKeyPairGenerator = KeyPairGenerator.getInstance("DH");
+        aliceKeyPairGenerator.initialize(2048); // Adjust the key size as needed
+        KeyPair aliceKeyPair = aliceKeyPairGenerator.generateKeyPair();
+
+        // Extract Alice's public key
+        PublicKey alicePublicKey = aliceKeyPair.getPublic();
+
+        // Alice sends her public key to Bob (normally over a secure channel)
+
+        // Bob receives Alice's public key (e.g., over a network)
+        String encodedAlicePublicKey = Base64.getEncoder().encodeToString(alicePublicKey.getEncoded());
+        byte[] decodedAlicePublicKey = Base64.getDecoder().decode(encodedAlicePublicKey);
+        X509EncodedKeySpec aliceKeySpec = new X509EncodedKeySpec(decodedAlicePublicKey);
+        KeyFactory keyFactory = KeyFactory.getInstance("DH");
+        PublicKey receivedAlicePublicKey = keyFactory.generatePublic(aliceKeySpec);
+
+        // Generate Bob's key pair using the same parameters as Alice
+        DHParameterSpec dhParams = ((DHPublicKey) receivedAlicePublicKey).getParams();
+        KeyPairGenerator bobKeyPairGenerator = KeyPairGenerator.getInstance("DH");
+        bobKeyPairGenerator.initialize(dhParams);
+        KeyPair bobKeyPair = bobKeyPairGenerator.generateKeyPair();
+
+        // Bob extracts his public key
+        PublicKey bobPublicKey = bobKeyPair.getPublic();
+
+        // Bob sends his public key to Alice (normally over a secure channel)
+
+        // Alice receives Bob's public key (e.g., over a network)
+        // (Skipping the decoding and key factory steps since they are similar to Bob's side)
+
+        // Alice and Bob both have each other's public keys and can derive a shared secret
+        KeyAgreement aliceKeyAgreement = KeyAgreement.getInstance("DH");
+        aliceKeyAgreement.init(aliceKeyPair.getPrivate());
+        aliceKeyAgreement.doPhase(bobPublicKey, true);
+        byte[] aliceSharedSecret = aliceKeyAgreement.generateSecret();
+
+        KeyAgreement bobKeyAgreement = KeyAgreement.getInstance("DH");
+        bobKeyAgreement.init(bobKeyPair.getPrivate());
+        bobKeyAgreement.doPhase(receivedAlicePublicKey, true);
+        byte[] bobSharedSecret = bobKeyAgreement.generateSecret();
+
+        // Alice and Bob now have the same shared secret
+        // You can use the shared secret as a symmetric encryption key or for other purposes
+        System.out.println("Alice's shared secret: " + Base64.getEncoder().encodeToString(aliceSharedSecret));
+        System.out.println("Bob's shared secret: " + Base64.getEncoder().encodeToString(bobSharedSecret));
+
+
+
+
 
     }
 }
