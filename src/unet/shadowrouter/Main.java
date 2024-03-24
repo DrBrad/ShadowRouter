@@ -184,13 +184,18 @@ public class Main {
         PublicKey alicePublicKey = decodePublic(alice.getPublic().getEncoded());
         PublicKey bobPublicKey = decodePublic(bob.getPublic().getEncoded());
 
-        System.out.println(Base64.getEncoder().encodeToString(generateSecret(alice.getPrivate(), bobPublicKey)));
-        System.out.println(Base64.getEncoder().encodeToString(generateSecret(bob.getPrivate(), alicePublicKey)));
+        //System.out.println(Base64.getEncoder().encodeToString(generateSecret(alice.getPrivate(), bobPublicKey)));
+        //System.out.println(Base64.getEncoder().encodeToString(generateSecret(bob.getPrivate(), alicePublicKey)));
+
+        byte[] data = "HELLO WORLD".getBytes();
+        byte[] signature = sign(alice.getPrivate(), data);
+        boolean verify = verify(alicePublicKey, signature, data);
+        System.out.println("VERIFY: "+verify);
 
 
-
-
-
+        data = "HELLO WORLD 2".getBytes();
+        verify = verify(alicePublicKey, signature, data);
+        System.out.println("VERIFY: "+verify);
 
 
 
