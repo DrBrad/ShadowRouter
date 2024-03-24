@@ -1,4 +1,4 @@
 package unet.shadowrouter.net;
 
-public class NatTraversal {
+public class NatPMP {
 }
