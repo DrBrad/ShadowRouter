@@ -7,6 +7,18 @@ import java.net.Socket;
 
 public class TTunnel implements Runnable {
 
+    /*
+    HEADER WILL BE CONSTANT
+    [ SR ]
+
+    BYTE COMMANDS
+    - 0x00 CONNECT
+    - 0x01 RELAY
+
+    +---------------+----------------+
+    | 2 BYTE HEADER | 1 BYTE COMMAND |
+    */
+
     private Socket socket;
     private InputStream in;
     private OutputStream out;
