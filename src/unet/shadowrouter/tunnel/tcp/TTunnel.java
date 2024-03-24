@@ -12,11 +12,13 @@ public class TTunnel implements Runnable {
     [ SR ]
 
     BYTE COMMANDS
-    - 0x00 CONNECT
-    - 0x01 RELAY
+    - 0x00 TCP
+    - 0x01 UDP
 
-    +---------------+----------------+
-    | 2 BYTE HEADER | 1 BYTE COMMAND |
+
+    +---------------+-----------------+
+    | 2 BYTE HEADER | 1 BYTE PROTOCOL |
+    +---------------+-----------------+
     */
 
     private Socket socket;
