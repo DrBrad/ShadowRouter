@@ -13,6 +13,7 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.net.Socket;
 import java.security.KeyPair;
+import java.security.MessageDigest;
 import java.security.PrivateKey;
 import java.security.PublicKey;
 import java.util.Arrays;
@@ -57,7 +58,11 @@ public class TTunnel implements Runnable {
 
             try{
                 Cipher cipher = Cipher.getInstance("AES/GCM/NoPadding");
-                SecretKey secretKey = new SecretKeySpec(secret, "AES");
+
+                MessageDigest digest = MessageDigest.getInstance("SHA-256");
+                byte[] derivedKey = digest.digest(secret); // Or use a proper KDF like HKDF
+
+                SecretKey secretKey = new SecretKeySpec(derivedKey, "AES");
 
                 //byte[] additionalData = "Metadata".getBytes();
                 //cipher.updateAAD(additionalData);

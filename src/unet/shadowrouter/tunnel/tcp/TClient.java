@@ -14,10 +14,7 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.net.InetSocketAddress;
 import java.net.Socket;
-import java.security.KeyPair;
-import java.security.PrivateKey;
-import java.security.PublicKey;
-import java.security.SecureRandom;
+import java.security.*;
 import java.util.Arrays;
 import java.util.Base64;
 
@@ -48,7 +45,11 @@ public class TClient {
 
         try{
             Cipher cipher = Cipher.getInstance("AES/GCM/NoPadding");
-            SecretKey secretKey = new SecretKeySpec(secret, "AES");
+
+            MessageDigest digest = MessageDigest.getInstance("SHA-256");
+            byte[] derivedKey = digest.digest(secret); // Or use a proper KDF like HKDF
+
+            SecretKey secretKey = new SecretKeySpec(derivedKey, "AES");
 
             //byte[] additionalData = "Metadata".getBytes();
             //cipher.updateAAD(additionalData);
