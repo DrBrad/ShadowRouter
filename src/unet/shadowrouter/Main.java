@@ -7,6 +7,7 @@ import unet.shadowrouter.tunnel.tcp.TClient;
 import unet.shadowrouter.tunnel.tcp.TTunnelServer;
 import unet.shadowrouter.utils.KeyRing;
 
+import java.io.OutputStream;
 import java.net.InetAddress;
 import java.net.InetSocketAddress;
 import java.security.KeyPair;
@@ -162,6 +163,7 @@ public class Main {
     */
 
     public static void main(String[] args)throws Exception {
+        /*
         Kademlia kad = new Kademlia();
         kad.registerRequestListener(new SRequestListener());
 
@@ -172,6 +174,7 @@ public class Main {
         kad.registerMessage(PutCircuitResponse.class);
 
         kad.bind();
+        */
 
 
         //NON GENESIS
@@ -212,5 +215,8 @@ public class Main {
         TClient client = new TClient(keyPairB.getPublic());
         client.connect(new InetSocketAddress(InetAddress.getLocalHost(), 6969));
 
+        OutputStream out = client.getOutputStream();
+        out.write("HELLO WORLD".getBytes());
+        client.close();
     }
 }
