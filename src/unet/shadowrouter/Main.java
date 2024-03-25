@@ -1,18 +1,6 @@
 package unet.shadowrouter;
 
-import unet.kad4.Kademlia;
-import unet.shadowrouter.kad.SRequestListener;
-import unet.shadowrouter.kad.messages.*;
-import unet.shadowrouter.tunnel.tcp.TClient;
-import unet.shadowrouter.tunnel.tcp.TTunnelServer;
-import unet.shadowrouter.utils.KeyRing;
-
-import java.io.OutputStream;
-import java.net.InetAddress;
-import java.net.InetSocketAddress;
-import java.security.KeyPair;
-
-public class Main {
+public class Main2 {
 
     /*
     aes-128-gcm, aes-192-gcm, aes-256-gcm,
@@ -204,19 +192,5 @@ public class Main {
         verify = verify(alicePublicKey, signature, data);
         System.out.println("VERIFY: "+verify);
         */
-
-
-        KeyPair keyPairB = KeyRing.generateKeyPair("RSA");
-
-        TTunnelServer server = new TTunnelServer(keyPairB);
-        server.start(6969);
-
-        //KeyPair keyPairA = KeyRing.generateKeyPair("RSA");
-        TClient client = new TClient(keyPairB.getPublic());
-        client.connect(new InetSocketAddress(InetAddress.getLocalHost(), 6969));
-
-        OutputStream out = client.getOutputStream();
-        out.write("HELLO WORLD".getBytes());
-        client.close();
     }
 }
