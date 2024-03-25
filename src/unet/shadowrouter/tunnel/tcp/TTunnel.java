@@ -24,9 +24,6 @@ public class TTunnel {
     private Socket socket;
     private InputStream in;
     private OutputStream out;
-    //private PublicKey peerKey;
-
-    //private byte[] secret, iv;
 
     public TTunnel(){
     }
@@ -40,26 +37,6 @@ public class TTunnel {
         socket.connect(address);
         in = socket.getInputStream();
         out = socket.getOutputStream();
-
-
-
-        /*
-
-        //out.write("Knowledge nay estimable questions repulsive daughters boy. Solicitude gay way unaffected expression for. His mistress ladyship required off horrible disposed rejoiced. Unpleasing pianoforte unreserved as oh he unpleasant no inquietude insipidity. Advantages can discretion possession add favourable cultivated admiration far. Why rather assure how esteem end hunted nearer and before. By an truth after heard going early given he. Charmed to it excited females whether at".getBytes());
-        out.write("HELLO WORLD".getBytes());
-        //out.write("HELLO WORLD".getBytes());
-        out.flush();
-        //out.close();
-
-        //Thread.sleep(1000);
-        //socket.close();
-
-
-        //System.out.println(in.available());
-        byte[] buf = new byte[4096];
-        int len = in.read(buf);
-        System.out.println("CLIENT: "+new String(buf, 0, len));
-        */
     }
 
     /*

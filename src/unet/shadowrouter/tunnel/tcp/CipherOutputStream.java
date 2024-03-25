@@ -30,13 +30,7 @@ public class CipherOutputStream extends FilterOutputStream {
     }
 
     public void write(byte[] buf, int off, int len)throws IOException {
-        try{
-            byte[] crypted = cipher.update(buf, off, len);
-            out.write(crypted);
-        }catch(Exception e){
-            IOException ioex = new IOException(String.valueOf(e));
-            ioex.initCause(e);
-            throw ioex;
-        }
+        byte[] crypted = cipher.update(buf, off, len);
+        out.write(crypted);
     }
 }
