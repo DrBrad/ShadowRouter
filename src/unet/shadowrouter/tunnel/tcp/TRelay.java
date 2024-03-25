@@ -48,10 +48,10 @@ public class TRelay implements Runnable {
             SecretKey secretKey = new SecretKeySpec(derivedKey, "AES");
 
             cipher.init(Cipher.DECRYPT_MODE, secretKey, new IvParameterSpec(iv));//new GCMParameterSpec(128, iv));
-            in = new CipherInputStream(in, cipher);
+            //in = new CipherInputStream(in, cipher);
 
             cipher.init(Cipher.ENCRYPT_MODE, secretKey, new IvParameterSpec(iv));//, new GCMParameterSpec(128, iv));
-            out = new CipherOutputStream(out, cipher);
+            //out = new CipherOutputStream(out, cipher);
 
             byte[] addr = new byte[in.read()];
             in.read(addr);
@@ -67,7 +67,8 @@ public class TRelay implements Runnable {
         }
     }
 
-    public void handshake()throws IOException, NoSuchAlgorithmException, InvalidKeyException, SignatureException, InvalidKeySpecException {
+    public void handshake()throws IOException, NoSuchAlgorithmException, InvalidKeyException, SignatureException,
+            InvalidKeySpecException {
         byte[] header = new byte[SHADOW_ROUTER_HEADER.length];
         in.read(header);
 
@@ -103,6 +104,8 @@ public class TRelay implements Runnable {
 
         out.write(len);
         out.write(ecdhKey);
+        //byte[] sign = sign(myKey, ecdhKey);
+        //out.write(sign);
         out.write(sign(myKey, ecdhKey));
         out.flush();
     }
@@ -116,15 +119,25 @@ public class TRelay implements Runnable {
             @Override
             public void run(){
                 try{
-                    in.transferTo(relay.getOutputStream());
+                    relay(in, relay.getOutputStream());
                 }catch(IOException e){
                     e.printStackTrace();
                 }
             }
         }).start();
 
-        relay.getInputStream().transferTo(out);
+        relay(relay.getInputStream(), out);
 
         relay.close();
+        System.err.println("CLOSED");
+    }
+
+    private void relay(InputStream in, OutputStream out)throws IOException {
+        byte[] buf = new byte[4096];
+        int len;
+        while((len = in.read(buf)) != -1){
+            out.write(buf, 0, len);
+            out.flush();
+        }
     }
 }

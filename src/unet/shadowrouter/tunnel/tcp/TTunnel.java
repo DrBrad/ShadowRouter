@@ -94,7 +94,6 @@ public class TTunnel {
         byte[] iv = new byte[16];
         random.nextBytes(iv);
         out.write(iv);
-
         out.flush();
 
         byte[] header = new byte[SHADOW_ROUTER_HEADER.length];
@@ -109,8 +108,11 @@ public class TTunnel {
                 ((in.read() & 0xff) << 16) |
                 ((in.read() & 0xff) << 24));
 
+        //while(in.available() < length){
+        //}
+
         byte[] data = new byte[length];
-        in.read(data);
+        in.read(data, 0, length);
 
         byte[] signature = new byte[256];
         in.read(signature);
@@ -129,10 +131,10 @@ public class TTunnel {
         SecretKey secretKey = new SecretKeySpec(derivedKey, "AES");
 
         cipher.init(Cipher.DECRYPT_MODE, secretKey, new IvParameterSpec(iv));//, new GCMParameterSpec(128, iv));
-        in = new CipherInputStream(in, cipher);
+        //in = new CipherInputStream(in, cipher);
 
         cipher.init(Cipher.ENCRYPT_MODE, secretKey, new IvParameterSpec(iv));//, new GCMParameterSpec(128, iv));
-        out = new CipherOutputStream(out, cipher);
+        //out = new CipherOutputStream(out, cipher);
 
         byte[] addr = AddressUtils.packAddress(address);
         out.write((byte) addr.length);

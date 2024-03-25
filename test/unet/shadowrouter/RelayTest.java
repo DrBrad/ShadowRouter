@@ -26,8 +26,17 @@ public class RelayTest {
 
         //KeyPair keyPairA = KeyRing.generateKeyPair("RSA");
         TTunnel tunnel = new TTunnel();
-        tunnel.connect(new InetSocketAddress(InetAddress.getLocalHost(), 6969));
-        tunnel.handshake(keyPair.getPublic(), new InetSocketAddress(InetAddress.getLocalHost(), 6968));
+        tunnel.connect(new InetSocketAddress(InetAddress.getLocalHost(), 6969)); //ENTRY
+
+        InetSocketAddress[] route = {
+                new InetSocketAddress(InetAddress.getLocalHost(), 6969), //ENTRY TO MID
+                new InetSocketAddress(InetAddress.getLocalHost(), 6969), //MID TO EXIT
+                new InetSocketAddress(InetAddress.getLocalHost(), 6968), //EXIT TO LOCATION
+        };
+
+        for(InetSocketAddress address : route){
+            tunnel.handshake(keyPair.getPublic(), address);
+        }
 
         InputStream in = tunnel.getInputStream();
         OutputStream out = tunnel.getOutputStream();
@@ -40,5 +49,6 @@ public class RelayTest {
         System.out.println("CLIENT: "+new String(buf, 0, len));
 
         tunnel.close();
+        System.err.println("CLOSED 2");
     }
 }
