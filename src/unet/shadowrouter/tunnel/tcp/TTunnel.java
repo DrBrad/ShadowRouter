@@ -2,6 +2,12 @@ package unet.shadowrouter.tunnel.tcp;
 
 import unet.shadowrouter.utils.KeyRing;
 
+import javax.crypto.Cipher;
+import javax.crypto.CipherInputStream;
+import javax.crypto.CipherOutputStream;
+import javax.crypto.SecretKey;
+import javax.crypto.spec.GCMParameterSpec;
+import javax.crypto.spec.SecretKeySpec;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
@@ -16,26 +22,14 @@ import static unet.shadowrouter.utils.KeyRing.*;
 
 public class TTunnel implements Runnable {
 
-    /*
-    HEADER WILL BE CONSTANT
-    [ SR ]
-
-    BYTE COMMANDS
-    - 0x00 TCP
-    - 0x01 UDP
-
-
-    +---------------+-----------------+
-    | 2 BYTE HEADER | 1 BYTE PROTOCOL |
-    +---------------+-----------------+
-    */
-
     public static final byte[] SHADOW_ROUTER_HEADER = new byte[]{ 'S', 'R' };
 
     private Socket socket;
     private InputStream in;
     private OutputStream out;
     private PrivateKey myKey;
+
+    private byte[] secret, iv;
 
     public TTunnel(PrivateKey myKey, Socket socket){
         this.myKey = myKey;
@@ -61,6 +55,30 @@ public class TTunnel implements Runnable {
             handshake();
 
 
+            try{
+                Cipher cipher = Cipher.getInstance("AES/GCM/NoPadding");
+                SecretKey secretKey = new SecretKeySpec(secret, "AES");
+
+                //byte[] additionalData = "Metadata".getBytes();
+                //cipher.updateAAD(additionalData);
+
+                cipher.init(Cipher.DECRYPT_MODE, secretKey, new GCMParameterSpec(128, iv));
+                in = new CipherInputStream(in, cipher);
+
+                cipher.init(Cipher.ENCRYPT_MODE, secretKey, new GCMParameterSpec(128, iv));
+                out = new CipherOutputStream(out, cipher);
+
+
+                byte[] buf = new byte[4096];
+                int len = in.read(buf);
+                System.out.println("SERVER: "+new String(buf, 0, len));
+
+                out.write("HELLO WORLD".getBytes());
+                out.flush();
+
+            }catch(Exception e){
+                e.printStackTrace();
+            }
 
 
 
@@ -94,11 +112,13 @@ public class TTunnel implements Runnable {
             byte[] data = new byte[length];
             in.read(data);
 
+            iv = new byte[16];
+            in.read(iv);
 
 
             KeyPair keyPair = generateKeyPair("DH");
-            byte[] secret = generateSecret(keyPair.getPrivate(), decodePublic(data, "DH"));
-            System.out.println("SERVER: "+Base64.getEncoder().encodeToString(secret));
+            secret = generateSecret(keyPair.getPrivate(), decodePublic(data, "DH"));
+            System.out.println("SERVER: "+secret.length+"  "+Base64.getEncoder().encodeToString(secret));
 
             out.write(SHADOW_ROUTER_HEADER);
 

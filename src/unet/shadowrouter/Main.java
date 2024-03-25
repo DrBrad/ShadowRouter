@@ -203,17 +203,5 @@ public class Main {
         TClient client = new TClient(keyPairB.getPublic());
         client.connect(new InetSocketAddress(InetAddress.getLocalHost(), 6969));
 
-
-
-
-        System.out.println(KeyRing.sign(keyPairB.getPrivate(), "hello world".getBytes()).length);
-        System.out.println(KeyRing.sign(keyPairB.getPrivate(), "hello world 123".getBytes()).length);
-        System.out.println(KeyRing.sign(keyPairB.getPrivate(), "hello world 435234234234".getBytes()).length);
-        System.out.println(KeyRing.sign(keyPairB.getPrivate(), "hello world 9999".getBytes()).length);
-
-
-
-
-
     }
 }
