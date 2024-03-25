@@ -77,7 +77,7 @@ public class TTunnel implements Runnable {
 
                 byte[] buf = new byte[4096];
                 int len = in.read(buf);
-                System.out.println("SERVER: "+len+" "+new String(buf, 0, len));
+                System.out.println("SERVER: "+new String(buf, 0, len));
 
 
                 //len = in.read(buf);
