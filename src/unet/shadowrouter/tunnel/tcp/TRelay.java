@@ -119,7 +119,7 @@ public class TRelay implements Runnable {
             @Override
             public void run(){
                 try{
-                    relay(in, relay.getOutputStream());
+                    transfer(in, relay.getOutputStream());
                 }catch(IOException e){
                     e.printStackTrace();
                 }
@@ -127,14 +127,14 @@ public class TRelay implements Runnable {
         });//.start();
         thread.start();
 
-        relay(relay.getInputStream(), out);
+        transfer(relay.getInputStream(), out);
         thread.interrupt();
 
         relay.close();
         System.err.println("CLOSED");
     }
 
-    private void relay(InputStream in, OutputStream out)throws IOException {
+    private void transfer(InputStream in, OutputStream out)throws IOException {
         byte[] buf = new byte[4096];
         int len;
         while((len = in.read(buf)) != -1){
