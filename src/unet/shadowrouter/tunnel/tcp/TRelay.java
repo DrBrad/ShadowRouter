@@ -48,10 +48,10 @@ public class TRelay implements Runnable {
             SecretKey secretKey = new SecretKeySpec(derivedKey, "AES");
 
             cipher.init(Cipher.DECRYPT_MODE, secretKey, new IvParameterSpec(iv));//new GCMParameterSpec(128, iv));
-            //in = new CipherInputStream(in, cipher);
+            in = new CipherInputStream(in, cipher);
 
             cipher.init(Cipher.ENCRYPT_MODE, secretKey, new IvParameterSpec(iv));//, new GCMParameterSpec(128, iv));
-            //out = new CipherOutputStream(out, cipher);
+            out = new CipherOutputStream(out, cipher);
 
             byte[] addr = new byte[in.read()];
             in.read(addr);
@@ -115,7 +115,7 @@ public class TRelay implements Runnable {
         System.out.println(address.getAddress().getHostAddress()+"  "+address.getPort());
         relay.connect(address);
 
-        new Thread(new Runnable(){
+        Thread thread = new Thread(new Runnable(){
             @Override
             public void run(){
                 try{
@@ -124,9 +124,15 @@ public class TRelay implements Runnable {
                     e.printStackTrace();
                 }
             }
-        }).start();
+        });//.start();
+        thread.start();
 
         relay(relay.getInputStream(), out);
+        try{
+            thread.join();
+        }catch(InterruptedException e){
+            e.printStackTrace();
+        }
 
         relay.close();
         System.err.println("CLOSED");
