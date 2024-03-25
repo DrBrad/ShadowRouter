@@ -14,6 +14,13 @@ import java.security.KeyPair;
 public class Main {
 
     /*
+    aes-128-gcm, aes-192-gcm, aes-256-gcm,
+    aes-128-cfb, aes-192-cfb, aes-256-cfb,
+    aes-128-ctr, aes-192-ctr, aes-256-ctr,
+    camellia-128-cfb, camellia-192-cfb,
+    camellia-256-cfb, bf-cfb,
+
+
     ENSURING RELAY INTEGRITY
     - NODES WILL CREATE A BLOCK / DESCRIPTOR CONTAINING THEIR NODE ID
     - THE NODE WILL SEND IT TO THEIR 4 CLOSEST NODES FOR SIGNING AND STORING
