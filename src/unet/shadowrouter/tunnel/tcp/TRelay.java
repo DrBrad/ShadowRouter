@@ -120,6 +120,9 @@ public class TRelay implements Runnable {
             public void run(){
                 try{
                     transfer(in, relay.getOutputStream());
+                    //while(!socket.isClosed() && !relay.isClosed()){
+                    //    in.transferTo(relay.getOutputStream());
+                    //}
                 }catch(IOException e){
                     e.printStackTrace();
                 }
@@ -128,6 +131,9 @@ public class TRelay implements Runnable {
         thread.start();
 
         transfer(relay.getInputStream(), out);
+        //while(!relay.isClosed() && !socket.isClosed()){
+        //    relay.getInputStream().transferTo(out);
+        //}
         thread.interrupt();
 
         relay.close();
