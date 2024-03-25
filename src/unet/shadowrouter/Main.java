@@ -157,6 +157,8 @@ public class Main {
 
     - FORK KAD4
 
+    https://stackoverflow.com/questions/71998790/using-cipherinputstream-with-sockets-finding-size-of-unencrypted-file
+
     */
 
     public static void main(String[] args)throws Exception {
