@@ -7,6 +7,7 @@ import javax.crypto.CipherInputStream;
 import javax.crypto.CipherOutputStream;
 import javax.crypto.SecretKey;
 import javax.crypto.spec.GCMParameterSpec;
+import javax.crypto.spec.IvParameterSpec;
 import javax.crypto.spec.SecretKeySpec;
 import java.io.IOException;
 import java.io.InputStream;
@@ -57,7 +58,7 @@ public class TTunnel implements Runnable {
 
 
             try{
-                Cipher cipher = Cipher.getInstance("AES/GCM/NoPadding");
+                Cipher cipher = Cipher.getInstance("AES/CTR/NoPadding");
 
                 MessageDigest digest = MessageDigest.getInstance("SHA-256");
                 byte[] derivedKey = digest.digest(secret); // Or use a proper KDF like HKDF
@@ -67,10 +68,10 @@ public class TTunnel implements Runnable {
                 //byte[] additionalData = "Metadata".getBytes();
                 //cipher.updateAAD(additionalData);
 
-                cipher.init(Cipher.DECRYPT_MODE, secretKey, new GCMParameterSpec(128, iv));
+                cipher.init(Cipher.DECRYPT_MODE, secretKey, new IvParameterSpec(iv));//new GCMParameterSpec(128, iv));
                 in = new CipherInputStream(in, cipher);
 
-                cipher.init(Cipher.ENCRYPT_MODE, secretKey, new GCMParameterSpec(128, iv));
+                cipher.init(Cipher.ENCRYPT_MODE, secretKey, new IvParameterSpec(iv));//, new GCMParameterSpec(128, iv));
                 out = new CipherOutputStream(out, cipher);
 
 

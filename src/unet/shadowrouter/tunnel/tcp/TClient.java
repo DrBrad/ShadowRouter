@@ -8,6 +8,7 @@ import javax.crypto.CipherInputStream;
 import javax.crypto.CipherOutputStream;
 import javax.crypto.SecretKey;
 import javax.crypto.spec.GCMParameterSpec;
+import javax.crypto.spec.IvParameterSpec;
 import javax.crypto.spec.SecretKeySpec;
 import java.io.IOException;
 import java.io.InputStream;
@@ -44,7 +45,7 @@ public class TClient {
         handshake();
 
         try{
-            Cipher cipher = Cipher.getInstance("AES/GCM/NoPadding");
+            Cipher cipher = Cipher.getInstance("AES/CTR/NoPadding");
 
             MessageDigest digest = MessageDigest.getInstance("SHA-256");
             byte[] derivedKey = digest.digest(secret); // Or use a proper KDF like HKDF
@@ -54,10 +55,10 @@ public class TClient {
             //byte[] additionalData = "Metadata".getBytes();
             //cipher.updateAAD(additionalData);
 
-            cipher.init(Cipher.DECRYPT_MODE, secretKey, new GCMParameterSpec(128, iv));
+            cipher.init(Cipher.DECRYPT_MODE, secretKey, new IvParameterSpec(iv));//, new GCMParameterSpec(128, iv));
             in = new CipherInputStream(in, cipher);
 
-            cipher.init(Cipher.ENCRYPT_MODE, secretKey, new GCMParameterSpec(128, iv));
+            cipher.init(Cipher.ENCRYPT_MODE, secretKey, new IvParameterSpec(iv));//, new GCMParameterSpec(128, iv));
             out = new CipherOutputStream(out, cipher);
 
 
@@ -66,7 +67,7 @@ public class TClient {
             out.write("HELLO WORLD".getBytes());
             out.write("HELLO WORLD".getBytes());
             out.flush();
-            out.close();
+            //out.close();
 
             Thread.sleep(1000);
             //socket.close();
