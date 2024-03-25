@@ -1,18 +1,103 @@
 package unet.shadowrouter.tunnel.tcp;
 
 import unet.kad4.utils.Node;
+import unet.shadowrouter.utils.KeyRing;
 
 import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
+import java.net.InetSocketAddress;
 import java.net.Socket;
+import java.security.KeyPair;
+import java.security.PrivateKey;
+import java.security.PublicKey;
+import java.util.Arrays;
+import java.util.Base64;
+
+import static unet.shadowrouter.utils.KeyRing.*;
 
 public class TClient {
 
-    public TClient(){
+    public static final byte[] SHADOW_ROUTER_HEADER = new byte[]{ 'S', 'R' };
 
+    private Socket socket;
+    private InputStream in;
+    private OutputStream out;
+    private PublicKey peerKey;
+
+    public TClient(PublicKey peerKey){
+        this.peerKey = peerKey;
     }
 
-    public void connect(Node node)throws IOException {
-        Socket socket = new Socket();
-        socket.connect(node.getAddress());
+    public void connect(/*Node node*/ InetSocketAddress address)throws IOException {
+        socket = new Socket();
+        socket.connect(address);
+        in = socket.getInputStream();
+        out = socket.getOutputStream();
+
+        handshake();
+    }
+
+    /*
+    REQUEST
+    +-----------------+-----------------------------+---------------+
+    | 2 BYTE CONSTANT | 4 BYTE DH PUBLIC_KEY LENGTH | DH PUBLIC_KEY |
+    +-----------------+-----------------------------+---------------+
+
+    RESPONSE
+    +-----------------+-----------------------------+---------------+-----------+
+    | 2 BYTE CONSTANT | 4 BYTE DH PUBLIC_KEY LENGTH | DH PUBLIC_KEY | SIGNATURE |
+    +-----------------+-----------------------------+---------------+-----------+
+    */
+    public void handshake()throws IOException {
+        try{
+            KeyPair keyPair = generateKeyPair("DH");
+
+            out.write(SHADOW_ROUTER_HEADER);
+
+            byte[] ecdhKey = keyPair.getPublic().getEncoded();
+
+            byte[] len = new byte[4];
+            len[0] = ((byte) ecdhKey.length);
+            len[1] = ((byte) (ecdhKey.length >> 8));
+            len[2] = ((byte) (ecdhKey.length >> 16));
+            len[3] = ((byte) (ecdhKey.length >> 24));
+
+            out.write(len);
+            out.write(ecdhKey);
+            out.flush();
+
+            byte[] header = new byte[SHADOW_ROUTER_HEADER.length];
+            in.read(header);
+
+            if(!Arrays.equals(header, SHADOW_ROUTER_HEADER)){
+                //CLOSE
+                System.err.println("MISSING SHADOW ROUTER HEADER");
+                return;
+            }
+
+            int length = ((in.read() & 0xff) |
+                    ((in.read() & 0xff) << 8) |
+                    ((in.read() & 0xff) << 16) |
+                    ((in.read() & 0xff) << 24));
+
+            byte[] data = new byte[length];
+            in.read(data);
+
+            byte[] signature = new byte[256];
+            in.read(signature);
+
+            if(!verify(peerKey, signature, data)){
+                //CLOSE
+                System.err.println("SIGNATURE IS INVALID");
+                return;
+            }
+
+            byte[] secret = generateSecret(keyPair.getPrivate(), decodePublic(data, "DH"));
+            System.out.println("CLIENT: "+Base64.getEncoder().encodeToString(secret));
+
+        }catch(Exception e){
+            e.printStackTrace();
+        }
     }
 }

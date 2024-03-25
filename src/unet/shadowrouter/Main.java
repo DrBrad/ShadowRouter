@@ -3,11 +3,13 @@ package unet.shadowrouter;
 import unet.kad4.Kademlia;
 import unet.shadowrouter.kad.SRequestListener;
 import unet.shadowrouter.kad.messages.*;
+import unet.shadowrouter.tunnel.tcp.TClient;
+import unet.shadowrouter.tunnel.tcp.TTunnelServer;
+import unet.shadowrouter.utils.KeyRing;
 
+import java.net.InetAddress;
+import java.net.InetSocketAddress;
 import java.security.KeyPair;
-import java.security.PublicKey;
-
-import static unet.shadowrouter.utils.RSAUtils.*;
 
 public class Main {
 
@@ -170,6 +172,7 @@ public class Main {
         //WE COULD HAVE A REQUEST SIGN - IN WHICH A > SIGNS FOR B
 
 
+        /*
         KeyPair alice = generateKeyPair();
         KeyPair bob = generateKeyPair();
 
@@ -188,7 +191,25 @@ public class Main {
         data = "HELLO WORLD 2".getBytes();
         verify = verify(alicePublicKey, signature, data);
         System.out.println("VERIFY: "+verify);
+        */
 
+
+        KeyPair keyPairB = KeyRing.generateKeyPair("RSA");
+
+        TTunnelServer server = new TTunnelServer(keyPairB);
+        server.start(6969);
+
+        //KeyPair keyPairA = KeyRing.generateKeyPair("RSA");
+        TClient client = new TClient(keyPairB.getPublic());
+        client.connect(new InetSocketAddress(InetAddress.getLocalHost(), 6969));
+
+
+
+
+        System.out.println(KeyRing.sign(keyPairB.getPrivate(), "hello world".getBytes()).length);
+        System.out.println(KeyRing.sign(keyPairB.getPrivate(), "hello world 123".getBytes()).length);
+        System.out.println(KeyRing.sign(keyPairB.getPrivate(), "hello world 435234234234".getBytes()).length);
+        System.out.println(KeyRing.sign(keyPairB.getPrivate(), "hello world 9999".getBytes()).length);
 
 
 

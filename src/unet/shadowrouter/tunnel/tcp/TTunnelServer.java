@@ -3,13 +3,15 @@ package unet.shadowrouter.tunnel.tcp;
 import java.io.IOException;
 import java.net.ServerSocket;
 import java.net.Socket;
+import java.security.KeyPair;
 
 public class TTunnelServer {
 
     private ServerSocket server;
+    private KeyPair keyPair;
 
-    public TTunnelServer(){
-
+    public TTunnelServer(KeyPair keyPair){
+        this.keyPair = keyPair;
     }
 
     public void start(int port)throws IOException {
@@ -21,7 +23,7 @@ public class TTunnelServer {
                 try{
                     Socket socket;
                     while((socket = server.accept()) != null){
-                        new Thread(new TTunnel(socket)).start();
+                        new Thread(new TTunnel(keyPair.getPrivate(), socket)).start();
                     }
                 }catch(IOException e){
                     e.printStackTrace();
