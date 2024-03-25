@@ -1,11 +1,10 @@
 package unet.shadowrouter.utils;
 
-import javax.crypto.KeyAgreement;
 import java.security.*;
 import java.security.spec.InvalidKeySpecException;
 import java.security.spec.X509EncodedKeySpec;
 
-public class Crypto {
+public class RSAUtils {
 
     public static KeyPair generateKeyPair()throws NoSuchAlgorithmException {
         KeyPairGenerator keyPairGenerator = KeyPairGenerator.getInstance("RSA");

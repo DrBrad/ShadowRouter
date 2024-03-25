@@ -3,19 +3,11 @@ package unet.shadowrouter;
 import unet.kad4.Kademlia;
 import unet.shadowrouter.kad.SRequestListener;
 import unet.shadowrouter.kad.messages.*;
-import unet.shadowrouter.utils.Crypto;
 
-import javax.crypto.KeyAgreement;
-import javax.crypto.interfaces.DHPublicKey;
-import javax.crypto.spec.DHParameterSpec;
-import java.security.KeyFactory;
 import java.security.KeyPair;
-import java.security.KeyPairGenerator;
 import java.security.PublicKey;
-import java.security.spec.X509EncodedKeySpec;
-import java.util.Base64;
 
-import static unet.shadowrouter.utils.Crypto.*;
+import static unet.shadowrouter.utils.RSAUtils.*;
 
 public class Main {
 
