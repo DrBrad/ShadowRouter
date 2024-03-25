@@ -69,7 +69,7 @@ public class TTunnel implements Runnable {
 
 
         try{
-            KeyPair rsa = RSAUtils.generateKeyPair();
+            //KeyPair rsa = RSAUtils.generateKeyPair();
             //SHOULD NEVER CHANGE... DONT GEN HERE
 
             KeyPair keyPair = ECDHUtils.generateKeyPair();
