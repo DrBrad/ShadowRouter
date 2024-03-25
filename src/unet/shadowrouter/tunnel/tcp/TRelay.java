@@ -1,10 +1,8 @@
 package unet.shadowrouter.tunnel.tcp;
 
 import unet.kad4.utils.net.AddressUtils;
-import unet.shadowrouter.utils.KeyRing;
 
 import javax.crypto.*;
-import javax.crypto.spec.GCMParameterSpec;
 import javax.crypto.spec.IvParameterSpec;
 import javax.crypto.spec.SecretKeySpec;
 import java.io.IOException;
@@ -19,7 +17,7 @@ import java.util.Base64;
 
 import static unet.shadowrouter.utils.KeyRing.*;
 
-public class TTunnel implements Runnable {
+public class TRelay implements Runnable {
 
     public static final byte[] SHADOW_ROUTER_HEADER = new byte[]{ 'S', 'R' };
 
@@ -30,7 +28,7 @@ public class TTunnel implements Runnable {
 
     private byte[] secret, iv;
 
-    public TTunnel(PrivateKey myKey, Socket socket){
+    public TRelay(PrivateKey myKey, Socket socket){
         this.myKey = myKey;
         this.socket = socket;
     }
@@ -55,26 +53,12 @@ public class TTunnel implements Runnable {
             cipher.init(Cipher.ENCRYPT_MODE, secretKey, new IvParameterSpec(iv));//, new GCMParameterSpec(128, iv));
             out = new CipherOutputStream(out, cipher);
 
+            byte[] addr = new byte[in.read()];
+            in.read(addr);
+            relay(AddressUtils.unpackAddress(addr));
 
-            /*
-            byte[] buf = new byte[4096];
-            int len = in.read(buf);
-            System.out.println("SERVER: "+new String(buf, 0, len));
-            */
-
-            byte[] addr = new byte[(in.read() == 0x04) ? 6 : 18];
-            InetSocketAddress address = AddressUtils.unpackAddress(addr);
-
-            Socket relay = new Socket();
-            relay.connect(address);
-
-            new Thread(new Runnable(){
-                @Override
-                public void run(){
-                }
-            }).start();
-
-
+            in.close();
+            out.close();
             socket.close();
 
         }catch(IOException | NoSuchAlgorithmException | InvalidKeyException | SignatureException | InvalidKeySpecException |
@@ -121,5 +105,26 @@ public class TTunnel implements Runnable {
         out.write(ecdhKey);
         out.write(sign(myKey, ecdhKey));
         out.flush();
+    }
+
+    public void relay(InetSocketAddress address)throws IOException {
+        Socket relay = new Socket();
+        System.out.println(address.getAddress().getHostAddress()+"  "+address.getPort());
+        relay.connect(address);
+
+        new Thread(new Runnable(){
+            @Override
+            public void run(){
+                try{
+                    in.transferTo(relay.getOutputStream());
+                }catch(IOException e){
+                    e.printStackTrace();
+                }
+            }
+        }).start();
+
+        relay.getInputStream().transferTo(out);
+
+        relay.close();
     }
 }

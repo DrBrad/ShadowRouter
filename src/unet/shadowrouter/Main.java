@@ -1,6 +1,6 @@
 package unet.shadowrouter;
 
-public class Main2 {
+public class Main {
 
     /*
     aes-128-gcm, aes-192-gcm, aes-256-gcm,

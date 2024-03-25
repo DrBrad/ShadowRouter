@@ -5,12 +5,12 @@ import java.net.ServerSocket;
 import java.net.Socket;
 import java.security.KeyPair;
 
-public class TTunnelServer {
+public class TRelayServer {
 
     private ServerSocket server;
     private KeyPair keyPair;
 
-    public TTunnelServer(KeyPair keyPair){
+    public TRelayServer(KeyPair keyPair){
         this.keyPair = keyPair;
     }
 
@@ -23,7 +23,7 @@ public class TTunnelServer {
                 try{
                     Socket socket;
                     while((socket = server.accept()) != null){
-                        new Thread(new TTunnel(keyPair.getPrivate(), socket)).start();
+                        new Thread(new TRelay(keyPair.getPrivate(), socket)).start();
                     }
                 }catch(IOException e){
                     e.printStackTrace();

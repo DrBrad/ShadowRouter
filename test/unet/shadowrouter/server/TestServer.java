@@ -5,9 +5,8 @@ import unet.shadowrouter.tunnel.tcp.TRelay;
 import java.io.IOException;
 import java.net.ServerSocket;
 import java.net.Socket;
-import java.security.KeyPair;
 
-public class Server {
+public class TestServer {
 
     private ServerSocket server;
 
@@ -20,7 +19,7 @@ public class Server {
                 try{
                     Socket socket;
                     while((socket = server.accept()) != null){
-                        new Thread(new TRelay(keyPair.getPrivate(), socket)).start();
+                        new Thread(new TestSocket(socket)).start();
                     }
                 }catch(IOException e){
                     e.printStackTrace();

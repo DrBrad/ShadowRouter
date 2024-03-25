@@ -8,7 +8,6 @@ import javax.crypto.spec.SecretKeySpec;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
-import java.net.Inet4Address;
 import java.net.InetSocketAddress;
 import java.net.Socket;
 import java.security.*;
@@ -18,7 +17,7 @@ import java.util.Base64;
 
 import static unet.shadowrouter.utils.KeyRing.*;
 
-public class TRelay {
+public class TTunnel {
 
     public static final byte[] SHADOW_ROUTER_HEADER = new byte[]{ 'S', 'R' };
 
@@ -29,9 +28,11 @@ public class TRelay {
 
     //private byte[] secret, iv;
 
-    public TRelay(PublicKey peerKey){
-        this.peerKey = peerKey;
+    public TTunnel(){
+    }
 
+    public TTunnel(InetSocketAddress address)throws IOException {
+        connect(address);
     }
 
     public void connect(/*Node node*/ InetSocketAddress address)throws IOException {
@@ -134,7 +135,7 @@ public class TRelay {
         out = new CipherOutputStream(out, cipher);
 
         byte[] addr = AddressUtils.packAddress(address);
-        out.write((addr.length == 6) ? 0x04 : 0x06);
+        out.write((byte) addr.length);
         out.write(addr);
         out.flush();
     }

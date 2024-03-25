@@ -5,12 +5,13 @@ import unet.shadowrouter.tunnel.tcp.TRelayServer;
 import unet.shadowrouter.tunnel.tcp.TTunnel;
 import unet.shadowrouter.utils.KeyRing;
 
+import java.io.InputStream;
 import java.io.OutputStream;
 import java.net.InetAddress;
 import java.net.InetSocketAddress;
 import java.security.KeyPair;
 
-public class Main {
+public class RelayTest {
 
     public static void main(String[] args)throws Exception {
         TestServer testServer = new TestServer();
@@ -28,8 +29,16 @@ public class Main {
         tunnel.connect(new InetSocketAddress(InetAddress.getLocalHost(), 6969));
         tunnel.handshake(keyPair.getPublic(), new InetSocketAddress(InetAddress.getLocalHost(), 6968));
 
+        InputStream in = tunnel.getInputStream();
         OutputStream out = tunnel.getOutputStream();
+
         out.write("HELLO WORLD".getBytes());
+        out.flush();
+
+        byte[] buf = new byte[4096];
+        int len = in.read(buf);
+        System.out.println("CLIENT: "+new String(buf, 0, len));
+
         tunnel.close();
     }
 }
