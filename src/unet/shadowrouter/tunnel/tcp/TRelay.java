@@ -128,11 +128,7 @@ public class TRelay implements Runnable {
         thread.start();
 
         relay(relay.getInputStream(), out);
-        try{
-            thread.join();
-        }catch(InterruptedException e){
-            e.printStackTrace();
-        }
+        thread.interrupt();
 
         relay.close();
         System.err.println("CLOSED");

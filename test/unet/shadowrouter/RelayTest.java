@@ -30,7 +30,7 @@ public class RelayTest {
 
         InetSocketAddress[] route = {
                 new InetSocketAddress(InetAddress.getLocalHost(), 6969), //ENTRY TO MID
-                //new InetSocketAddress(InetAddress.getLocalHost(), 6969), //MID TO EXIT
+                new InetSocketAddress(InetAddress.getLocalHost(), 6969), //MID TO EXIT
                 new InetSocketAddress(InetAddress.getLocalHost(), 6968), //EXIT TO LOCATION
         };
 

@@ -108,9 +108,6 @@ public class TTunnel {
                 ((in.read() & 0xff) << 16) |
                 ((in.read() & 0xff) << 24));
 
-        //while(in.available() < length){
-        //}
-
         byte[] data = new byte[length];
         in.read(data, 0, length);
 
