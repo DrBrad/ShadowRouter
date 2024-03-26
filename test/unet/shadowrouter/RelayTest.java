@@ -48,6 +48,7 @@ public class RelayTest {
             r.startRelay(7000+i);
             r.join(6000+i, InetAddress.getLocalHost(), 6000+(i-1));
             nodes.add(r);
+            System.err.println("STARTING NODE "+i);
 
             Thread.sleep(1000);
         }
