@@ -110,6 +110,17 @@ public class RelayTest {
         });
 
 
+        while(true){
+            StringBuilder b = new StringBuilder();
+            b.append(router.getRoutingTable().getAllNodes().size());
+            for(KademliaBase k : nodes){
+                b.append(" | "+k.getRoutingTable().getAllNodes().size());
+            }
+            System.out.println(b.toString());
+
+            Thread.sleep(3000);
+        }
+
         /*
         TestServer testServer = new TestServer();
         testServer.start(8080);
