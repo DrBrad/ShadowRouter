@@ -34,7 +34,8 @@ public class RelayTest {
         System.out.println("TEST SERVER STARTED");
 
         ShadowRouter shadowRouter = new ShadowRouter();
-        shadowRouter.bind(6000, );
+        shadowRouter.startRelay(7000);
+        shadowRouter.bind(6000);
 
 
         /*

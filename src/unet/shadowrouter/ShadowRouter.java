@@ -70,6 +70,7 @@ public class ShadowRouter extends KademliaBase {
         relay.start(port);
     }
 
+    @Override
     public void join(int localPort, InetSocketAddress address)throws IOException {
         super.join(localPort, address);
 
@@ -79,7 +80,14 @@ public class ShadowRouter extends KademliaBase {
         server.send(request, new JoinNodeListener(this));
     }
 
-
+    @Override
+    public void stop(){
+        try{
+            relay.stop();
+        }catch(IOException e){
+            e.printStackTrace();
+        }
+    }
 
 
 
