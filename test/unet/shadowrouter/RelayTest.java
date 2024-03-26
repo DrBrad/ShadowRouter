@@ -15,10 +15,14 @@ import java.net.InetAddress;
 import java.net.InetSocketAddress;
 import java.security.KeyPair;
 import java.security.PublicKey;
+import java.util.List;
 
 public class RelayTest {
 
     public static void main(String[] args)throws Exception {
+        TestServer testServer = new TestServer();
+        testServer.start(8080);
+        System.out.println("TEST SERVER STARTED");
 
         //MAKE SURE WE SIGN THE MESSAGES AS WELL...
 
@@ -28,27 +32,83 @@ public class RelayTest {
         kad.bind(7000);
         System.out.println();
 
-        Kademlia k2 = new Kademlia();
-        k2.getRoutingTable().setSecureOnly(false);
-        k2.getRefreshHandler().setRefreshTime(30000);
-        k2.join(7001, InetAddress.getLocalHost(), 7000);
-        System.out.println();
+        startNode(7001, 7000, 5881);
+        startNode(7002, 7000, 5882);
+        startNode(7003, 7000, 5883);
+        startNode(7004, 7001, 5884);
 
-        Kademlia k3 = new Kademlia();
-        k3.getRoutingTable().setSecureOnly(false);
-        k3.getRefreshHandler().setRefreshTime(30000);
-        k3.join(7002, InetAddress.getLocalHost(), 7000);
-        System.out.println();
 
-        Kademlia k4 = new Kademlia();
-        k4.getRoutingTable().setSecureOnly(false);
-        k4.getRefreshHandler().setRefreshTime(30000);
-        k4.join(7003, InetAddress.getLocalHost(), 7002);
-        System.out.println();
+
+        List<Node> nodes = kad.getRoutingTable().getAllNodes();
+
+        Tunnel tunnel = new Tunnel();
+        tunnel.connect(nodes.get(0)); //ENTRY
+        //HANDSHAKE
+
+        //GET ONLY 3 RANDOM NODES IN NETWORK
+        for(int i = 1; i < 3; i++){
+            tunnel.relay(nodes.get(i));
+            //HANDSHAKE
+        }
+
+        InputStream in = tunnel.getInputStream();
+        OutputStream out = tunnel.getOutputStream();
+
+        out.write("HELLO WORLD".getBytes());
+        out.flush();
+
+        byte[] buf = new byte[4096];
+        int len = in.read(buf);
+        System.out.println("CLIENT: "+new String(buf, 0, len));
+
+        tunnel.close();
+        System.err.println("CLOSED 2");
+
+        /*
+
+        //KeyPair keyPair = KeyRing.generateKeyPair("RSA");
+
+        //KeyPair keyPairA = KeyRing.generateKeyPair("RSA");
+        Tunnel tunnel = new Tunnel();
+        tunnel.connect(new InetSocketAddress(InetAddress.getLocalHost(), 6969)); //ENTRY
+
+        InetSocketAddress[] route = {
+                new InetSocketAddress(InetAddress.getLocalHost(), 6970), //ENTRY TO MID
+                new InetSocketAddress(InetAddress.getLocalHost(), 6971), //MID TO EXIT
+                new InetSocketAddress(InetAddress.getLocalHost(), 8080), //EXIT TO LOCATION
+        };
+
+        for(int i = 0; i < keys.length; i++){
+            tunnel.relay(keys[i], route[i]);
+        }
+
+        InputStream in = tunnel.getInputStream();
+        OutputStream out = tunnel.getOutputStream();
+
+        out.write("HELLO WORLD".getBytes());
+        out.flush();
+
+        byte[] buf = new byte[4096];
+        int len = in.read(buf);
+        System.out.println("CLIENT: "+new String(buf, 0, len));
+
+        tunnel.close();
+        System.err.println("CLOSED 2");
+
+
+
+
+
+
+
+
+
+
 
         //SHOULD WE MOVE THIS...?
         //kad.getServer().getKeyPair();
 
+        /*
         while(true){
             System.out.println(kad.getRoutingTable().getAllNodes().size()+" "+
                     k2.getRoutingTable().getAllNodes().size()+" "+
@@ -57,6 +117,7 @@ public class RelayTest {
 
             Thread.sleep(3000);
         }
+        */
 
 
 
@@ -114,12 +175,15 @@ public class RelayTest {
         System.err.println("CLOSED 2");*/
     }
 
-    public static PublicKey startRelay(int port)throws Exception {
-        KeyPair keyPair = KeyUtils.generateKeyPair("RSA");
-        RelayServer relayServer = new RelayServer(keyPair);
-        relayServer.start(port);
-        System.out.println("RELAY SERVER STARTED");
+    public static void startNode(int port, int remotePort, int tcpPort)throws Exception {
+        Kademlia kad = new Kademlia();
+        kad.getRoutingTable().setSecureOnly(false);
+        kad.getRefreshHandler().setRefreshTime(30000);
+        kad.join(port, InetAddress.getLocalHost(), remotePort);
+        System.out.println();
 
-        return keyPair.getPublic();
+        RelayServer relayServer = new RelayServer(kad.getServer().getKeyPair());
+        relayServer.start(tcpPort);
+        System.out.println("RELAY SERVER STARTED");
     }
 }
