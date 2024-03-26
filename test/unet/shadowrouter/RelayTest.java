@@ -77,6 +77,8 @@ public class RelayTest {
 
         List<Node> ns = router.getRoutingTable().getAllNodes();
 
+
+
         GetPortRequest request = new GetPortRequest();
         request.setDestination(ns.get(0).getAddress());
         router.getServer().send(request, new ResponseCallback(){
