@@ -17,7 +17,7 @@ import java.util.Base64;
 
 import static unet.shadowrouter.utils.KeyRing.*;
 
-public class TTunnel {
+public class Tunnel {
 
     public static final byte[] SHADOW_ROUTER_HEADER = new byte[]{ 'S', 'R' };
 
@@ -25,10 +25,10 @@ public class TTunnel {
     private InputStream in;
     private OutputStream out;
 
-    public TTunnel(){
+    public Tunnel(){
     }
 
-    public TTunnel(InetSocketAddress address)throws IOException {
+    public Tunnel(InetSocketAddress address)throws IOException {
         connect(address);
     }
 

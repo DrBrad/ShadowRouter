@@ -1,7 +1,5 @@
 package unet.shadowrouter.server;
 
-import unet.shadowrouter.tunnel.tcp.TRelay;
-
 import java.io.IOException;
 import java.net.ServerSocket;
 import java.net.Socket;

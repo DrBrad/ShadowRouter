@@ -17,7 +17,7 @@ import java.util.Base64;
 
 import static unet.shadowrouter.utils.KeyRing.*;
 
-public class TRelay implements Runnable {
+public class Relay implements Runnable {
 
     public static final byte[] SHADOW_ROUTER_HEADER = new byte[]{ 'S', 'R' };
 
@@ -28,7 +28,7 @@ public class TRelay implements Runnable {
 
     private byte[] secret, iv;
 
-    public TRelay(PrivateKey myKey, Socket socket){
+    public Relay(PrivateKey myKey, Socket socket){
         this.myKey = myKey;
         this.socket = socket;
     }
@@ -41,18 +41,6 @@ public class TRelay implements Runnable {
 
             handshake();
 
-            Cipher cipher = Cipher.getInstance("AES/CTR/NoPadding");
-
-            MessageDigest digest = MessageDigest.getInstance("SHA-256");
-            byte[] derivedKey = digest.digest(secret); // Or use a proper KDF like HKDF
-            SecretKey secretKey = new SecretKeySpec(derivedKey, "AES");
-
-            cipher.init(Cipher.DECRYPT_MODE, secretKey, new IvParameterSpec(iv));//new GCMParameterSpec(128, iv));
-            in = new CipherInputStream(in, cipher);
-
-            cipher.init(Cipher.ENCRYPT_MODE, secretKey, new IvParameterSpec(iv));//, new GCMParameterSpec(128, iv));
-            out = new CipherOutputStream(out, cipher);
-
             byte[] addr = new byte[in.read()];
             in.read(addr);
             relay(AddressUtils.unpackAddress(addr));
@@ -63,12 +51,12 @@ public class TRelay implements Runnable {
 
         }catch(IOException | NoSuchAlgorithmException | InvalidKeyException | SignatureException | InvalidKeySpecException |
                NoSuchPaddingException | InvalidAlgorithmParameterException e){
-            e.printStackTrace();
+            //e.printStackTrace();
         }
     }
 
     public void handshake()throws IOException, NoSuchAlgorithmException, InvalidKeyException, SignatureException,
-            InvalidKeySpecException {
+            InvalidKeySpecException, NoSuchPaddingException, InvalidAlgorithmParameterException {
         byte[] header = new byte[SHADOW_ROUTER_HEADER.length];
         in.read(header);
 
@@ -108,6 +96,18 @@ public class TRelay implements Runnable {
         //out.write(sign);
         out.write(sign(myKey, ecdhKey));
         out.flush();
+
+        Cipher cipher = Cipher.getInstance("AES/CTR/NoPadding");
+
+        MessageDigest digest = MessageDigest.getInstance("SHA-256");
+        byte[] derivedKey = digest.digest(secret); // Or use a proper KDF like HKDF
+        SecretKey secretKey = new SecretKeySpec(derivedKey, "AES");
+
+        cipher.init(Cipher.DECRYPT_MODE, secretKey, new IvParameterSpec(iv));//new GCMParameterSpec(128, iv));
+        in = new CipherInputStream(in, cipher);
+
+        cipher.init(Cipher.ENCRYPT_MODE, secretKey, new IvParameterSpec(iv));//, new GCMParameterSpec(128, iv));
+        out = new CipherOutputStream(out, cipher);
     }
 
     public void relay(InetSocketAddress address)throws IOException {
@@ -124,7 +124,7 @@ public class TRelay implements Runnable {
                     //    in.transferTo(relay.getOutputStream());
                     //}
                 }catch(IOException e){
-                    e.printStackTrace();
+                    //e.printStackTrace();
                 }
             }
         });//.start();

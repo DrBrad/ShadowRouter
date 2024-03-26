@@ -5,12 +5,12 @@ import java.net.ServerSocket;
 import java.net.Socket;
 import java.security.KeyPair;
 
-public class TRelayServer {
+public class RelayServer {
 
     private ServerSocket server;
     private KeyPair keyPair;
 
-    public TRelayServer(KeyPair keyPair){
+    public RelayServer(KeyPair keyPair){
         this.keyPair = keyPair;
     }
 
@@ -23,7 +23,7 @@ public class TRelayServer {
                 try{
                     Socket socket;
                     while((socket = server.accept()) != null){
-                        new Thread(new TRelay(keyPair.getPrivate(), socket)).start();
+                        new Thread(new Relay(keyPair.getPrivate(), socket)).start();
                     }
                 }catch(IOException e){
                     e.printStackTrace();
