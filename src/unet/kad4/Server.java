@@ -111,40 +111,28 @@ public class Server {
         //SPAM THROTTLE...
 
         //CATCH IF NO TID... - MESSAGE IS POINTLESS - IGNORE
-        /*
-        int length = ((packet.getData()[0] & 0xff) |
-                ((packet.getData()[1] & 0xff) << 8) |
-                ((packet.getData()[2] & 0xff) << 16) |
-                ((packet.getData()[3] & 0xff) << 24));
-                */
 
-        byte[] signature = new byte[256];
-        System.arraycopy(packet.getData(), 0, signature, 0, signature.length);
+        BencodeObject ben = new BencodeObject(packet.getData());
 
-        byte[] data = new byte[packet.getLength()-signature.length];
-        System.arraycopy(packet.getData(), signature.length, data, 0, data.length);
-
-        BencodeObject ben = new BencodeObject(data);
-
-        if(!ben.containsKey(TID_KEY) || !ben.containsKey(MessageType.TYPE_KEY)){
+        if(!ben.getBencodeObject("d").containsKey(TID_KEY) || !ben.getBencodeObject("d").containsKey(MessageType.TYPE_KEY)){
             return;
         }
 
-        MessageType t = MessageType.fromRPCTypeName(ben.getString(MessageType.TYPE_KEY));
+        MessageType t = MessageType.fromRPCTypeName(ben.getBencodeObject("d").getString(MessageType.TYPE_KEY));
 
         try{
             switch(t){
                 case REQ_MSG: {
-                        MessageKey k = new MessageKey(ben.getString(t.getRPCTypeName()), t);
+                        MessageKey k = new MessageKey(ben.getBencodeObject("d").getString(t.getRPCTypeName()), t);
                         if(!kademlia.messages.containsKey(k)){
                             return;
                         }
 
-                        MethodMessageBase m = (MethodMessageBase) kademlia.messages.get(k)/*.getDeclaredConstructor(byte[].class)*/.newInstance(ben.getBytes(TID_KEY));//.decode(ben);
-                        m.decode(ben); //ERROR THROW - SEND ERROR MESSAGE
+                        MethodMessageBase m = (MethodMessageBase) kademlia.messages.get(k)/*.getDeclaredConstructor(byte[].class)*/.newInstance(ben.getBencodeObject("d").getBytes(TID_KEY));//.decode(ben);
+                        m.decode(ben.getBencodeObject("d")); //ERROR THROW - SEND ERROR MESSAGE
 
                         try{
-                            if(!KeyUtils.verify(m.getPublicKey(), signature, data)){
+                            if(!KeyUtils.verify(m.getPublicKey(), ben.getBytes("s"), ben.getBencodeObject("d").encode())){
                                 return;
                             }
                         }catch(NoSuchAlgorithmException | InvalidKeyException | SignatureException e){
@@ -182,7 +170,7 @@ public class Server {
                     break;
 
                 case RSP_MSG: {
-                        byte[] tid = ben.getBytes(TID_KEY);
+                        byte[] tid = ben.getBencodeObject("d").getBytes(TID_KEY);
                         Call call = tracker.poll(new ByteWrapper(tid));
                         if(call == null){
                             return;
@@ -194,10 +182,10 @@ public class Server {
                         }
 
                         MethodMessageBase m = (MethodMessageBase) kademlia.messages.get(k)/*.getDeclaredConstructor(byte[].class)*/.newInstance(tid);//.decode(ben);
-                        m.decode(ben);
+                        m.decode(ben.getBencodeObject("d"));
 
                         try{
-                            if(!KeyUtils.verify(m.getPublicKey(), signature, data)){
+                            if(!KeyUtils.verify(m.getPublicKey(), ben.getBytes("s"), ben.getBencodeObject("d").encode())){
                                 return;
                             }
                         }catch(NoSuchAlgorithmException | InvalidKeyException | SignatureException e){
@@ -238,28 +226,30 @@ public class Server {
                     break;
 
                 case ERR_MSG: {
-                        byte[] tid = ben.getBytes(TID_KEY);
+                        byte[] tid = ben.getBencodeObject("d").getBytes(TID_KEY);
                         Call call = tracker.poll(new ByteWrapper(tid));
                         if(call == null){
                             return;
                         }
 
                         ErrorResponse m = new ErrorResponse(tid);
-                        m.decode(ben);
+                        m.decode(ben.getBencodeObject("d"));
 
+                        /*
                         try{
-                            if(!KeyUtils.verify(m.getPublicKey(), signature, data)){
+                            if(!KeyUtils.verify(m.getPublicKey(), ben.getBytes("s"), ben.getBencodeObject("d").encode())){
                                 return;
                             }
                         }catch(NoSuchAlgorithmException | InvalidKeyException | SignatureException e){
                             e.printStackTrace();
                         }
+                        */
 
                         m.setOrigin(packet.getAddress(), packet.getPort());
 
-                        if(m.getPublic() != null){
-                            kademlia.getRoutingTable().updatePublicIPConsensus(m.getOriginAddress(), m.getPublicAddress());
-                        }
+                        //if(m.getPublic() != null){
+                        //    kademlia.getRoutingTable().updatePublicIPConsensus(m.getOriginAddress(), m.getPublicAddress());
+                        //}
 
                         //!req.getMessage().getUID().equals(m.getUID()) - THAT WOULDNT MATCH UP...
                         if(!call.getMessage().getDestination().equals(m.getOrigin())){
@@ -434,22 +424,12 @@ public class Server {
         message.setPublicKey(keyPair.getPublic());
 
         try{
-            byte[] data = message.encode().encode();
-            byte[] signature = KeyUtils.sign(keyPair.getPrivate(), data);
+            BencodeObject ben = new BencodeObject();
+            ben.put("d", message.encode());
+            ben.put("s", KeyUtils.sign(keyPair.getPrivate(), ben.getBencodeObject("d").encode()));
+            byte[] data = ben.encode();
 
-            /*
-            byte[] len = new byte[4];
-            len[0] = ((byte) signature.length);
-            len[1] = ((byte) (signature.length >> 8));
-            len[2] = ((byte) (signature.length >> 16));
-            len[3] = ((byte) (signature.length >> 24));
-            */
-
-            byte[] packet = new byte[data.length+256];//+signature.length+4];
-            System.arraycopy(signature, 0, packet, 0, signature.length);
-            System.arraycopy(data, 0, packet, signature.length, data.length);
-
-            server.send(new DatagramPacket(packet, 0, packet.length, message.getDestination()));
+            server.send(new DatagramPacket(data, 0, data.length, message.getDestination()));
 
         }catch(NoSuchAlgorithmException | InvalidKeyException | SignatureException e){
             e.printStackTrace();
