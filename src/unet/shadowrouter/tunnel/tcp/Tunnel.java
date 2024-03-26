@@ -15,7 +15,7 @@ import java.security.spec.InvalidKeySpecException;
 import java.util.Arrays;
 import java.util.Base64;
 
-import static unet.shadowrouter.utils.KeyRing.*;
+import static unet.kad4.utils.KeyUtils.*;
 
 public class Tunnel {
 

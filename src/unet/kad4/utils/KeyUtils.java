@@ -1,11 +1,11 @@
-package unet.shadowrouter.utils;
+package unet.kad4.utils;
 
 import javax.crypto.KeyAgreement;
 import java.security.*;
 import java.security.spec.InvalidKeySpecException;
 import java.security.spec.X509EncodedKeySpec;
 
-public class KeyRing {
+public class KeyUtils {
 
     public static KeyPair generateKeyPair(String alg)throws NoSuchAlgorithmException {
         KeyPairGenerator keyPairGenerator = KeyPairGenerator.getInstance(alg);

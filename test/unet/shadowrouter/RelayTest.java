@@ -3,9 +3,8 @@ package unet.shadowrouter;
 import unet.shadowrouter.server.TestServer;
 import unet.shadowrouter.tunnel.tcp.RelayServer;
 import unet.shadowrouter.tunnel.tcp.Tunnel;
-import unet.shadowrouter.utils.KeyRing;
+import unet.kad4.utils.KeyUtils;
 
-import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.net.InetAddress;
@@ -16,6 +15,16 @@ import java.security.PublicKey;
 public class RelayTest {
 
     public static void main(String[] args)throws Exception {
+
+        for(int i = 0; i < 20; i++){
+        KeyPair keyPair = KeyUtils.generateKeyPair("RSA");
+        System.out.println(keyPair.getPublic().getEncoded().length);
+        }
+
+
+
+        System.exit(0);
+
         TestServer testServer = new TestServer();
         testServer.start(8080);
         System.out.println("TEST SERVER STARTED");
@@ -57,7 +66,7 @@ public class RelayTest {
     }
 
     public static PublicKey startRelay(int port)throws Exception {
-        KeyPair keyPair = KeyRing.generateKeyPair("RSA");
+        KeyPair keyPair = KeyUtils.generateKeyPair("RSA");
         RelayServer relayServer = new RelayServer(keyPair);
         relayServer.start(port);
         System.out.println("RELAY SERVER STARTED");
