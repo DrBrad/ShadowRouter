@@ -15,7 +15,7 @@ import static unet.kad4.utils.UID.ID_LENGTH;
 public class NodeUtils {
 
     public static byte[] packNodes(List<Node> nodes, AddressType type){
-        byte[] buf = new byte[nodes.size()*(ID_LENGTH+type.getAddressLength()+2)];
+        byte[] buf = new byte[nodes.size()*(ID_LENGTH+PUBLIC_KEY_LENGTH+type.getAddressLength()+2)];
         int position = 0;
 
         for(Node n : nodes){

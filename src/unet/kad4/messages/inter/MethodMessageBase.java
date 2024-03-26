@@ -1,8 +1,12 @@
 package unet.kad4.messages.inter;
 
 import unet.bencode.variables.BencodeObject;
+import unet.kad4.utils.KeyUtils;
 import unet.kad4.utils.UID;
 import unet.kad4.utils.net.AddressUtils;
+
+import java.security.NoSuchAlgorithmException;
+import java.security.spec.InvalidKeySpecException;
 
 public class MethodMessageBase extends MessageBase {
 
@@ -60,6 +64,12 @@ public class MethodMessageBase extends MessageBase {
         }
 
         uid = new UID(ben.getBencodeObject(type.innerKey()).getBytes("id"));
+        try{
+            publicKey = KeyUtils.decodePublic(ben.getBencodeObject(type.innerKey()).getBytes("k"), "RSA");
+
+        }catch(NoSuchAlgorithmException | InvalidKeySpecException e){
+            e.printStackTrace();
+        }
 
         switch(type){
             case RSP_MSG:

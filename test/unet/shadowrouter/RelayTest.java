@@ -3,6 +3,7 @@ package unet.shadowrouter;
 import unet.kad4.Kademlia;
 import unet.kad4.messages.GetPortRequest;
 import unet.kad4.messages.GetPortResponse;
+import unet.kad4.utils.Node;
 import unet.shadowrouter.server.TestServer;
 import unet.shadowrouter.tunnel.tcp.RelayServer;
 import unet.shadowrouter.tunnel.tcp.Tunnel;
@@ -22,23 +23,45 @@ public class RelayTest {
         //MAKE SURE WE SIGN THE MESSAGES AS WELL...
 
         Kademlia kad = new Kademlia();
+        kad.getRoutingTable().setSecureOnly(false);
+        kad.getRefreshHandler().setRefreshTime(30000);
         kad.bind(7000);
         System.out.println();
 
         Kademlia k2 = new Kademlia();
+        k2.getRoutingTable().setSecureOnly(false);
+        k2.getRefreshHandler().setRefreshTime(30000);
         k2.join(7001, InetAddress.getLocalHost(), 7000);
         System.out.println();
 
+        Kademlia k3 = new Kademlia();
+        k3.getRoutingTable().setSecureOnly(false);
+        k3.getRefreshHandler().setRefreshTime(30000);
+        k3.join(7002, InetAddress.getLocalHost(), 7000);
+        System.out.println();
+
+        Kademlia k4 = new Kademlia();
+        k4.getRoutingTable().setSecureOnly(false);
+        k4.getRefreshHandler().setRefreshTime(30000);
+        k4.join(7003, InetAddress.getLocalHost(), 7002);
+        System.out.println();
 
         //SHOULD WE MOVE THIS...?
         //kad.getServer().getKeyPair();
 
-        System.out.println(kad.getRoutingTable().getAllNodes().size());
-        System.out.println(k2.getRoutingTable().getAllNodes().size());
+        while(true){
+            System.out.println(kad.getRoutingTable().getAllNodes().size()+" "+
+                    k2.getRoutingTable().getAllNodes().size()+" "+
+                    k3.getRoutingTable().getAllNodes().size()+" "+
+                    k3.getRoutingTable().getAllNodes().size());
+
+            Thread.sleep(3000);
+        }
 
 
 
 
+        /*
 
         System.exit(0);
 
@@ -88,7 +111,7 @@ public class RelayTest {
         System.out.println("CLIENT: "+new String(buf, 0, len));
 
         tunnel.close();
-        System.err.println("CLOSED 2");
+        System.err.println("CLOSED 2");*/
     }
 
     public static PublicKey startRelay(int port)throws Exception {

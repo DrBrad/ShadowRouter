@@ -135,9 +135,6 @@ public class Server {
                         m.decode(ben); //ERROR THROW - SEND ERROR MESSAGE
                         m.setOrigin(packet.getAddress(), packet.getPort());
 
-
-                    System.err.println("RECEIVED MESSAGE  "+k.getMethod()+"  "+k.getType());
-
                         if(!kademlia.requestMapping.containsKey(m.getMethod())){
                             return;
                         }
@@ -398,6 +395,7 @@ public class Server {
         }
 
         message.setUID(kademlia.routingTable.getDerivedUID());
+        message.setPublicKey(keyPair.getPublic());
 
         byte[] data = message.encode().encode();
         server.send(new DatagramPacket(data, 0, data.length, message.getDestination()));
@@ -422,6 +420,7 @@ public class Server {
 
         byte[] tid = generateTransactionID();
         message.setTransactionID(tid);
+        message.setPublicKey(keyPair.getPublic());
         tracker.add(new ByteWrapper(tid), new Call(message, node, callback));
         send(message);
     }
