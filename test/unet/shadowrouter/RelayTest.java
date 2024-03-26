@@ -35,7 +35,7 @@ public class RelayTest {
         };
 
         for(InetSocketAddress address : route){
-            tunnel.handshake(keyPair.getPublic(), address);
+            tunnel.relay(keyPair.getPublic(), address);
         }
 
         InputStream in = tunnel.getInputStream();

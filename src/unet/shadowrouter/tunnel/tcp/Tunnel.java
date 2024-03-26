@@ -50,7 +50,17 @@ public class Tunnel {
     | 2 BYTE CONSTANT | 4 BYTE DH PUBLIC_KEY LENGTH | DH PUBLIC_KEY | SIGNATURE |
     +-----------------+-----------------------------+---------------+-----------+
     */
-    public void handshake(PublicKey publicKey, InetSocketAddress address)throws IOException, NoSuchAlgorithmException, InvalidKeyException, SignatureException,
+    public void relay(PublicKey publicKey, InetSocketAddress address)throws IOException, NoSuchAlgorithmException, InvalidKeyException, SignatureException,
+            InvalidKeySpecException, NoSuchPaddingException, InvalidAlgorithmParameterException {
+        handshake(publicKey);
+
+        byte[] addr = AddressUtils.packAddress(address);
+        out.write((byte) addr.length);
+        out.write(addr);
+        out.flush();
+    }
+
+    private void handshake(PublicKey publicKey)throws IOException, NoSuchAlgorithmException, InvalidKeyException, SignatureException,
             InvalidKeySpecException, NoSuchPaddingException, InvalidAlgorithmParameterException {
         KeyPair keyPair = generateKeyPair("DH");
         SecureRandom random = new SecureRandom();
@@ -109,11 +119,6 @@ public class Tunnel {
 
         cipher.init(Cipher.ENCRYPT_MODE, secretKey, new IvParameterSpec(iv));//, new GCMParameterSpec(128, iv));
         out = new CipherOutputStream(out, cipher);
-
-        byte[] addr = AddressUtils.packAddress(address);
-        out.write((byte) addr.length);
-        out.write(addr);
-        out.flush();
     }
 
     public InputStream getInputStream(){
