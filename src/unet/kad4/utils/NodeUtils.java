@@ -9,7 +9,7 @@ import java.security.spec.InvalidKeySpecException;
 import java.util.ArrayList;
 import java.util.List;
 
-import static unet.kad4.Server.PUBLIC_KEY_LENGTH;
+import static unet.kad4.kad.Server.PUBLIC_KEY_LENGTH;
 import static unet.kad4.utils.UID.ID_LENGTH;
 
 public class NodeUtils {

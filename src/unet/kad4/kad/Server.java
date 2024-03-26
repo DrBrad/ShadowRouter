@@ -1,4 +1,4 @@
-package unet.kad4;
+package unet.kad4.kad;
 
 import unet.bencode.variables.BencodeObject;
 import unet.kad4.messages.ErrorResponse;
@@ -30,7 +30,7 @@ import static unet.kad4.messages.inter.MessageBase.TID_KEY;
 public class Server {
 
     public static final int TID_LENGTH = 6, PUBLIC_KEY_LENGTH = 294;
-    protected final Kademlia kademlia;
+    protected final KademliaBase kademlia;
 
     private DatagramSocket server;
     private KeyPair keyPair;
@@ -38,7 +38,7 @@ public class Server {
     private SecureRandom random;
     private ResponseTracker tracker;
 
-    public Server(Kademlia kademlia){
+    public Server(KademliaBase kademlia){
         this.kademlia = kademlia;
         tracker = new ResponseTracker();
 
