@@ -5,6 +5,7 @@ import unet.kad4.kad.KademliaBase;
 import unet.kad4.messages.*;
 import unet.kad4.refresh.tasks.BucketRefreshTask;
 import unet.kad4.refresh.tasks.StaleRefreshTask;
+import unet.kad4.routing.BucketTypes;
 import unet.kad4.routing.inter.RoutingTable;
 import unet.kad4.rpc.JoinNodeListener;
 import unet.kad4.rpc.KRequestListener;
@@ -20,8 +21,24 @@ import java.util.List;
 
 public class ShadowRouter extends KademliaBase {
 
+    private RelayServer relay;
+
+    public ShadowRouter(){
+        this(BucketTypes.KADEMLIA.getRoutingTable());
+    }
+
+    public ShadowRouter(String bucketType){
+        this(BucketTypes.fromString(bucketType).getRoutingTable());
+    }
+
     public ShadowRouter(RoutingTable routingTable){
         super(routingTable);
+
+        routingTable.setSecureOnly(false);
+        refresh.setRefreshTime(30000);
+
+        relay = new RelayServer(server.getKeyPair());
+
         BucketRefreshTask bucketRefreshTask = new BucketRefreshTask();
 
         routingTable.addRestartListener(new RoutingTable.RestartListener(){
@@ -49,6 +66,10 @@ public class ShadowRouter extends KademliaBase {
         }
     }
 
+    public void startRelay(int port)throws IOException {
+        relay.start(port);
+    }
+
     public void join(int localPort, InetSocketAddress address)throws IOException {
         super.join(localPort, address);
 
@@ -62,6 +83,7 @@ public class ShadowRouter extends KademliaBase {
 
 
 
+    /*
     private Kademlia kad;
     private RelayServer relay;
 
@@ -111,4 +133,5 @@ public class ShadowRouter extends KademliaBase {
 
         System.out.println("WE CAN NOW START RELAYING");
     }
+    */
 }

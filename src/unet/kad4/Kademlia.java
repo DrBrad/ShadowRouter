@@ -32,6 +32,14 @@ import java.util.Map;
 
 public class Kademlia extends KademliaBase {
 
+    public Kademlia(){
+        this(BucketTypes.KADEMLIA.getRoutingTable());
+    }
+
+    public Kademlia(String bucketType){
+        this(BucketTypes.fromString(bucketType).getRoutingTable());
+    }
+
     public Kademlia(RoutingTable routingTable){
         super(routingTable);
         BucketRefreshTask bucketRefreshTask = new BucketRefreshTask();
