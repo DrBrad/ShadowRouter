@@ -17,7 +17,7 @@ public class PingResponseListener extends ResponseCallback {
     @Override
     public void onResponse(ResponseEvent event){
         routingTable.insert(event.getNode());
-        System.out.println("SEEN "+event.getNode());
+        //System.out.println("SEEN "+event.getNode());
     }
 
     @Override

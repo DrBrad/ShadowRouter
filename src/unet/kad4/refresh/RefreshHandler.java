@@ -35,12 +35,12 @@ public class RefreshHandler {
         }
 
         if(refreshTimer == null && refreshTimerTask == null){
-            System.out.println("REFRESH STARTED");
+            //System.out.println("REFRESH STARTED");
             refreshTimer = new Timer(true);
             refreshTimerTask = new TimerTask(){
                 @Override
                 public void run(){
-                    System.out.println("STARTING REFRESH");
+                    //System.out.println("STARTING REFRESH");
                     for(Task task : tasks){
                         task.execute();
                     }
