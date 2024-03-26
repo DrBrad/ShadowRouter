@@ -14,7 +14,7 @@ public class SRequestListener extends RequestListener {
     }
 
     @RequestMapping("get_port")
-    public void onPingRequest(RequestEvent event){
+    public void onGetPortRequest(RequestEvent event){
         if(event.isPreventDefault()){
             return;
         }
