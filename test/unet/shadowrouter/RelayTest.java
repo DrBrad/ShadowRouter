@@ -89,7 +89,8 @@ public class RelayTest {
                 try{
                     Tunnel tunnel = new Tunnel();
                     tunnel.connect(ns.get(0), response.getPort()); //ENTRY
-
+                    tunnel.relay(ns.get(1));
+                    tunnel.relay(ns.get(2));
                     tunnel.exit(new InetSocketAddress(InetAddress.getLocalHost(), 8080));
 
                     InputStream in = tunnel.getInputStream();
@@ -349,19 +350,5 @@ public class RelayTest {
 
         tunnel.close();
         System.err.println("CLOSED 2");*/
-    }
-
-    public static Kademlia startNode(int port, int remotePort, int tcpPort)throws Exception {
-        Kademlia kad = new Kademlia();
-        kad.getRoutingTable().setSecureOnly(false);
-        kad.getRefreshHandler().setRefreshTime(30000);
-        kad.registerRequestListener(new SRequestListener(tcpPort));
-        kad.join(port, InetAddress.getLocalHost(), remotePort);
-        System.out.println();
-
-        RelayServer relayServer = new RelayServer(kad.getServer().getKeyPair());
-        relayServer.start(tcpPort);
-        System.out.println("RELAY SERVER STARTED");
-        return kad;
     }
 }

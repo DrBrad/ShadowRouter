@@ -1,5 +1,7 @@
 package unet.shadowrouter.tunnel.tcp;
 
+import unet.kad4.kad.KademliaBase;
+
 import java.io.IOException;
 import java.net.ServerSocket;
 import java.net.Socket;
@@ -7,11 +9,11 @@ import java.security.KeyPair;
 
 public class RelayServer {
 
+    private KademliaBase kademlia;
     private ServerSocket server;
-    private KeyPair keyPair;
 
-    public RelayServer(KeyPair keyPair){
-        this.keyPair = keyPair;
+    public RelayServer(KademliaBase kademlia){
+        this.kademlia = kademlia;
     }
 
     public void start(int port)throws IOException {
@@ -27,7 +29,7 @@ public class RelayServer {
                 try{
                     Socket socket;
                     while((socket = server.accept()) != null){
-                        new Thread(new Relay(keyPair.getPrivate(), socket)).start();
+                        new Thread(new Relay(kademlia, socket)).start();
                     }
                 }catch(IOException e){
                     e.printStackTrace();

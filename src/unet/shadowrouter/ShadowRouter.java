@@ -33,7 +33,7 @@ public class ShadowRouter extends KademliaBase {
         routingTable.setSecureOnly(false);
         refresh.setRefreshTime(30000);
 
-        relay = new RelayServer(server.getKeyPair());
+        relay = new RelayServer(this);
 
         BucketRefreshTask bucketRefreshTask = new BucketRefreshTask();
 

@@ -1,5 +1,12 @@
 package unet.shadowrouter.tunnel.tcp;
 
+import unet.kad4.kad.KademliaBase;
+import unet.kad4.messages.GetPortRequest;
+import unet.kad4.messages.GetPortResponse;
+import unet.kad4.rpc.events.ErrorResponseEvent;
+import unet.kad4.rpc.events.ResponseEvent;
+import unet.kad4.rpc.events.StalledEvent;
+import unet.kad4.rpc.events.inter.ResponseCallback;
 import unet.kad4.utils.net.AddressUtils;
 
 import javax.crypto.*;
@@ -24,12 +31,12 @@ public class Relay implements Runnable {
     private Socket socket;
     private InputStream in;
     private OutputStream out;
-    private PrivateKey myKey;
+    private KademliaBase kademlia;
 
     private byte[] secret, iv;
 
-    public Relay(PrivateKey myKey, Socket socket){
-        this.myKey = myKey;
+    public Relay(KademliaBase kademlia, Socket socket){
+        this.kademlia = kademlia;
         this.socket = socket;
     }
 
@@ -41,13 +48,19 @@ public class Relay implements Runnable {
 
             handshake();
 
+            byte type = (byte) in.read();
             byte[] addr = new byte[in.read()];
             in.read(addr);
-            relay(AddressUtils.unpackAddress(addr));
 
-            in.close();
-            out.close();
-            socket.close();
+            switch(type){
+                case 0x00:
+                    resolve(AddressUtils.unpackAddress(addr));
+                    break;
+
+                case 0x01:
+                    relay(AddressUtils.unpackAddress(addr));
+                    break;
+            }
 
         }catch(IOException | NoSuchAlgorithmException | InvalidKeyException | SignatureException | InvalidKeySpecException |
                NoSuchPaddingException | InvalidAlgorithmParameterException e){
@@ -94,7 +107,7 @@ public class Relay implements Runnable {
         out.write(ecdhKey);
         //byte[] sign = sign(myKey, ecdhKey);
         //out.write(sign);
-        out.write(sign(myKey, ecdhKey));
+        out.write(sign(kademlia.getServer().getKeyPair().getPrivate(), ecdhKey));
         out.flush();
 
         Cipher cipher = Cipher.getInstance("AES/CTR/NoPadding");
@@ -108,6 +121,54 @@ public class Relay implements Runnable {
 
         cipher.init(Cipher.ENCRYPT_MODE, secretKey, new IvParameterSpec(iv));//, new GCMParameterSpec(128, iv));
         out = new CipherOutputStream(out, cipher);
+    }
+
+    public void resolve(InetSocketAddress address)throws IOException {
+        GetPortRequest request = new GetPortRequest();
+        request.setDestination(address);
+        kademlia.getServer().send(request, new ResponseCallback(){
+            @Override
+            public void onResponse(ResponseEvent event){
+                GetPortResponse response = (GetPortResponse) event.getMessage();
+                try{
+                    relay(new InetSocketAddress(address.getAddress(), response.getPort()));
+
+                }catch(IOException e){
+                    e.printStackTrace();
+
+                }finally{
+                    try{
+                        in.close();
+                        out.close();
+                        socket.close();
+
+                    }catch(IOException e){
+                    }
+                }
+            }
+
+            @Override
+            public void onErrorResponse(ErrorResponseEvent event){
+                try{
+                    in.close();
+                    out.close();
+                    socket.close();
+
+                }catch(IOException e){
+                }
+            }
+
+            @Override
+            public void onStalled(StalledEvent event){
+                try{
+                    in.close();
+                    out.close();
+                    socket.close();
+
+                }catch(IOException e){
+                }
+            }
+        });
     }
 
     public void relay(InetSocketAddress address)throws IOException {
@@ -136,8 +197,13 @@ public class Relay implements Runnable {
         //}
         thread.interrupt();
 
-        relay.close();
         System.err.println("CLOSED");
+
+        relay.close();
+
+        in.close();
+        out.close();
+        socket.close();
     }
 
     private void transfer(InputStream in, OutputStream out)throws IOException {
