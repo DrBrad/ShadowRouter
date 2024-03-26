@@ -47,7 +47,7 @@ public class RelayTest {
             nodes.add(r);
             System.err.println("STARTING NODE "+i);
 
-            Thread.sleep(1000);
+            //Thread.sleep(1000);
         }
 
 
@@ -63,7 +63,7 @@ public class RelayTest {
 
             Thread.sleep(3000);
 
-            if(i == 10){
+            if(i == 11){
                 break;
             }
 
