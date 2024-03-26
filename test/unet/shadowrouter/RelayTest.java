@@ -20,10 +20,7 @@ import java.net.InetAddress;
 import java.net.InetSocketAddress;
 import java.security.KeyPair;
 import java.security.PublicKey;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 public class RelayTest {
 
@@ -76,7 +73,7 @@ public class RelayTest {
         System.err.println("TRYING TUNNEL");
 
         List<Node> ns = router.getRoutingTable().getAllNodes();
-
+        Collections.shuffle(ns);
 
 
         GetPortRequest request = new GetPortRequest();
