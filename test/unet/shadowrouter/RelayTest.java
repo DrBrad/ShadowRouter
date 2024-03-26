@@ -25,7 +25,19 @@ import java.util.Map;
 
 public class RelayTest {
 
+    //IF COMMAND NOT FOUND - SEND ERROR RESPONSE...
+
     public static void main(String[] args)throws Exception {
+
+        TestServer testServer = new TestServer();
+        testServer.start(8080);
+        System.out.println("TEST SERVER STARTED");
+
+        ShadowRouter shadowRouter = new ShadowRouter();
+        shadowRouter.bind(6000, );
+
+
+        /*
         TestServer testServer = new TestServer();
         testServer.start(8080);
         System.out.println("TEST SERVER STARTED");

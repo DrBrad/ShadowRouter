@@ -15,6 +15,10 @@ public class RelayServer {
     }
 
     public void start(int port)throws IOException {
+        if(isRunning()){
+            throw new IllegalArgumentException("Server has already started.");
+        }
+
         server = new ServerSocket(port);
 
         new Thread(new Runnable(){
@@ -33,9 +37,15 @@ public class RelayServer {
     }
 
     public void stop()throws IOException {
-        if(!server.isClosed()){
-            server.close();
+        if(!isRunning()){
+            throw new IllegalArgumentException("Server is not currently running.");
         }
+
+        server.close();
+    }
+
+    public boolean isRunning(){
+        return !server.isClosed();
     }
 
     public int getPort(){
