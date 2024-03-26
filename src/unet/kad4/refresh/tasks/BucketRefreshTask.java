@@ -62,7 +62,7 @@ public class BucketRefreshTask extends Task {
         @Override
         public void onResponse(ResponseEvent event){
             event.getNode().setSeen();
-            System.out.println("SEEN FN "+event.getNode());
+            //System.out.println("SEEN FN "+event.getNode());
             FindNodeResponse response = (FindNodeResponse) event.getMessage();
 
             if(response.hasNodes()){
@@ -78,7 +78,7 @@ public class BucketRefreshTask extends Task {
                 queries.addAll(nodes);
 
                 for(Node n : nodes){
-                    if((getRoutingTable().isSecureOnly() && !n.hasSecureID()) || n.hasQueried(now)){
+                    if(getRoutingTable().isSecureOnly() && !n.hasSecureID()){
                         System.out.println("SKIPPING "+now+"  "+n.getLastSeen()+"  "+n);
                         continue;
                     }

@@ -147,7 +147,7 @@ public class Server {
 
                         Node node = new Node(m.getUID(), m.getOrigin(), m.getPublicKey());
                         kademlia.routingTable.insert(node);
-                        System.out.println("SEEN REQ "+node);
+                        //System.out.println("SEEN REQ "+node);
 
                         RequestEvent event = new RequestEvent(m, node);
                         event.received();

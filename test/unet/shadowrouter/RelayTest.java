@@ -12,6 +12,7 @@ import unet.shadowrouter.tunnel.tcp.RelayServer;
 import unet.shadowrouter.tunnel.tcp.Tunnel;
 import unet.kad4.utils.KeyUtils;
 
+import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.net.InetAddress;
@@ -82,7 +83,31 @@ public class RelayTest {
         kad.getServer().send(request, new ResponseCallback(){
             @Override
             public void onResponse(ResponseEvent event){
-                System.out.println(nodes.get(0)+"  "+((GetPortResponse) event.getMessage()).getPort());
+                GetPortResponse response = (GetPortResponse) event.getMessage();
+
+                try{
+                    Tunnel tunnel = new Tunnel();
+                    tunnel.connect(nodes.get(0), response.getPort()); //ENTRY
+
+                    tunnel.exit(new InetSocketAddress(InetAddress.getLocalHost(), 8080));
+
+                    InputStream in = tunnel.getInputStream();
+                    OutputStream out = tunnel.getOutputStream();
+
+                    out.write("HELLO WORLD".getBytes());
+                    out.flush();
+
+                    byte[] buf = new byte[4096];
+                    int len = in.read(buf);
+                    System.out.println("CLIENT: "+new String(buf, 0, len));
+
+                    tunnel.close();
+                    System.err.println("CLOSED 2");
+                }catch(Exception e){
+                    e.printStackTrace();
+                }
+
+                //System.out.println(nodes.get(0)+"  "+((GetPortResponse) event.getMessage()).getPort());
             }
         });
 
