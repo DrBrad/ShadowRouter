@@ -27,6 +27,7 @@ public class RelayTest {
         System.out.println("TEST SERVER STARTED");
 
         //MAKE SURE WE SIGN THE MESSAGES AS WELL...
+        //WHY ARE WE GETTING STALLS... - SHOULDNT HAPPEN
 
         Kademlia kad = new Kademlia();
         kad.getRoutingTable().setSecureOnly(false);
