@@ -15,7 +15,9 @@ import java.net.InetAddress;
 import java.net.InetSocketAddress;
 import java.security.KeyPair;
 import java.security.PublicKey;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 public class RelayTest {
 
@@ -32,24 +34,50 @@ public class RelayTest {
         kad.bind(7000);
         System.out.println();
 
-        startNode(7001, 7000, 5881);
-        startNode(7002, 7000, 5882);
-        startNode(7003, 7000, 5883);
-        startNode(7004, 7001, 5884);
+        Kademlia k2 = startNode(7001, 7000, 5881);
+        Kademlia k3 = startNode(7002, 7000, 5882);
+        Kademlia k4 = startNode(7003, 7000, 5883);
+        Kademlia k5 = startNode(7004, 7001, 5884);
+
+        Thread.sleep(5000);
 
 
+        System.out.println(kad.getRoutingTable().getAllNodes().size()+" "+
+                k2.getRoutingTable().getAllNodes().size()+" "+
+                k3.getRoutingTable().getAllNodes().size()+" "+
+                k4.getRoutingTable().getAllNodes().size()+" "+
+                k5.getRoutingTable().getAllNodes().size());
+
+        Thread.sleep(27000);
+
+        System.out.println(kad.getRoutingTable().getAllNodes().size()+" "+
+                k2.getRoutingTable().getAllNodes().size()+" "+
+                k3.getRoutingTable().getAllNodes().size()+" "+
+                k4.getRoutingTable().getAllNodes().size()+" "+
+                k5.getRoutingTable().getAllNodes().size());
+
+
+        Map<Integer, Integer> portExchange = new HashMap<>();
+        portExchange.put(7001, 5881);
+        portExchange.put(7002, 5882);
+        portExchange.put(7003, 5883);
+        portExchange.put(7004, 5884);
 
         List<Node> nodes = kad.getRoutingTable().getAllNodes();
 
         Tunnel tunnel = new Tunnel();
-        tunnel.connect(nodes.get(0)); //ENTRY
+        tunnel.connect(nodes.get(0), portExchange.get(nodes.get(0).getPort())); //ENTRY
         //HANDSHAKE
 
         //GET ONLY 3 RANDOM NODES IN NETWORK
         for(int i = 1; i < 3; i++){
-            tunnel.relay(nodes.get(i));
-            //HANDSHAKE
+            tunnel.relay(nodes.get(i), portExchange.get(nodes.get(i).getPort()));
+            //tunnel.handshake(nodes.get(i));
         }
+
+        tunnel.exit(new InetSocketAddress(InetAddress.getLocalHost(), 8080));
+
+
 
         InputStream in = tunnel.getInputStream();
         OutputStream out = tunnel.getOutputStream();
@@ -175,7 +203,7 @@ public class RelayTest {
         System.err.println("CLOSED 2");*/
     }
 
-    public static void startNode(int port, int remotePort, int tcpPort)throws Exception {
+    public static Kademlia startNode(int port, int remotePort, int tcpPort)throws Exception {
         Kademlia kad = new Kademlia();
         kad.getRoutingTable().setSecureOnly(false);
         kad.getRefreshHandler().setRefreshTime(30000);
@@ -185,5 +213,6 @@ public class RelayTest {
         RelayServer relayServer = new RelayServer(kad.getServer().getKeyPair());
         relayServer.start(tcpPort);
         System.out.println("RELAY SERVER STARTED");
+        return kad;
     }
 }

@@ -1,5 +1,6 @@
 package unet.shadowrouter.tunnel.tcp;
 
+import unet.kad4.utils.Node;
 import unet.kad4.utils.net.AddressUtils;
 
 import javax.crypto.*;
@@ -28,15 +29,19 @@ public class Tunnel {
     public Tunnel(){
     }
 
-    public Tunnel(InetSocketAddress address)throws IOException {
-        connect(address);
+    public Tunnel(Node node, int port)throws IOException, NoSuchAlgorithmException, InvalidKeyException, SignatureException,
+            InvalidKeySpecException, NoSuchPaddingException, InvalidAlgorithmParameterException {
+        connect(node, port);
     }
 
-    public void connect(/*Node node*/ InetSocketAddress address)throws IOException {
+    public void connect(Node node, int port)throws IOException, NoSuchAlgorithmException, InvalidKeyException, SignatureException,
+            InvalidKeySpecException, NoSuchPaddingException, InvalidAlgorithmParameterException {
         socket = new Socket();
-        socket.connect(address);
+        System.out.println(node.getHostAddress()+"  "+node.getPort()+"  "+port);
+        socket.connect(new InetSocketAddress(node.getHostAddress(), port));
         in = socket.getInputStream();
         out = socket.getOutputStream();
+        handshake(node);
     }
 
     /*
@@ -50,17 +55,17 @@ public class Tunnel {
     | 2 BYTE CONSTANT | 4 BYTE DH PUBLIC_KEY LENGTH | DH PUBLIC_KEY | SIGNATURE |
     +-----------------+-----------------------------+---------------+-----------+
     */
-    public void relay(PublicKey publicKey, InetSocketAddress address)throws IOException, NoSuchAlgorithmException, InvalidKeyException, SignatureException,
+    public void relay(Node node, int port)throws IOException, NoSuchAlgorithmException, InvalidKeyException, SignatureException,
             InvalidKeySpecException, NoSuchPaddingException, InvalidAlgorithmParameterException {
-        handshake(publicKey);
-
-        byte[] addr = AddressUtils.packAddress(address);
+        byte[] addr = AddressUtils.packAddress(new InetSocketAddress(node.getHostAddress(), port));
         out.write((byte) addr.length);
         out.write(addr);
         out.flush();
+
+        handshake(node);
     }
 
-    private void handshake(PublicKey publicKey)throws IOException, NoSuchAlgorithmException, InvalidKeyException, SignatureException,
+    private void handshake(Node node)throws IOException, NoSuchAlgorithmException, InvalidKeyException, SignatureException,
             InvalidKeySpecException, NoSuchPaddingException, InvalidAlgorithmParameterException {
         KeyPair keyPair = generateKeyPair("DH");
         SecureRandom random = new SecureRandom();
@@ -101,7 +106,7 @@ public class Tunnel {
         byte[] signature = new byte[256];
         in.read(signature);
 
-        if(!verify(publicKey, signature, data)){
+        if(!verify(node.getPublicKey(), signature, data)){
             throw new IOException("Signature is Invalid.");
         }
 
@@ -119,6 +124,13 @@ public class Tunnel {
 
         cipher.init(Cipher.ENCRYPT_MODE, secretKey, new IvParameterSpec(iv));//, new GCMParameterSpec(128, iv));
         out = new CipherOutputStream(out, cipher);
+    }
+
+    public void exit(InetSocketAddress address)throws IOException {
+        byte[] addr = AddressUtils.packAddress(address);
+        out.write((byte) addr.length);
+        out.write(addr);
+        out.flush();
     }
 
     public InputStream getInputStream(){
