@@ -23,9 +23,7 @@ import java.lang.reflect.InvocationTargetException;
 import java.net.DatagramPacket;
 import java.net.DatagramSocket;
 import java.net.SocketException;
-import java.security.KeyPair;
-import java.security.NoSuchAlgorithmException;
-import java.security.SecureRandom;
+import java.security.*;
 
 import static unet.kad4.messages.inter.MessageBase.TID_KEY;
 
@@ -113,9 +111,20 @@ public class Server {
         //SPAM THROTTLE...
 
         //CATCH IF NO TID... - MESSAGE IS POINTLESS - IGNORE
+        /*
+        int length = ((packet.getData()[0] & 0xff) |
+                ((packet.getData()[1] & 0xff) << 8) |
+                ((packet.getData()[2] & 0xff) << 16) |
+                ((packet.getData()[3] & 0xff) << 24));
+                */
 
+        byte[] signature = new byte[256];
+        System.arraycopy(packet.getData(), 0, signature, 0, signature.length);
 
-        BencodeObject ben = new BencodeObject(packet.getData());
+        byte[] data = new byte[packet.getLength()-signature.length];
+        System.arraycopy(packet.getData(), signature.length, data, 0, data.length);
+
+        BencodeObject ben = new BencodeObject(data);
 
         if(!ben.containsKey(TID_KEY) || !ben.containsKey(MessageType.TYPE_KEY)){
             return;
@@ -133,6 +142,15 @@ public class Server {
 
                         MethodMessageBase m = (MethodMessageBase) kademlia.messages.get(k)/*.getDeclaredConstructor(byte[].class)*/.newInstance(ben.getBytes(TID_KEY));//.decode(ben);
                         m.decode(ben); //ERROR THROW - SEND ERROR MESSAGE
+
+                        try{
+                            if(!KeyUtils.verify(m.getPublicKey(), signature, data)){
+                                return;
+                            }
+                        }catch(NoSuchAlgorithmException | InvalidKeyException | SignatureException e){
+                            e.printStackTrace();
+                        }
+
                         m.setOrigin(packet.getAddress(), packet.getPort());
 
                         if(!kademlia.requestMapping.containsKey(m.getMethod())){
@@ -177,6 +195,15 @@ public class Server {
 
                         MethodMessageBase m = (MethodMessageBase) kademlia.messages.get(k)/*.getDeclaredConstructor(byte[].class)*/.newInstance(tid);//.decode(ben);
                         m.decode(ben);
+
+                        try{
+                            if(!KeyUtils.verify(m.getPublicKey(), signature, data)){
+                                return;
+                            }
+                        }catch(NoSuchAlgorithmException | InvalidKeyException | SignatureException e){
+                            e.printStackTrace();
+                        }
+
                         m.setOrigin(packet.getAddress(), packet.getPort());
 
                         if(m.getPublic() != null){
@@ -219,6 +246,15 @@ public class Server {
 
                         ErrorResponse m = new ErrorResponse(tid);
                         m.decode(ben);
+
+                        try{
+                            if(!KeyUtils.verify(m.getPublicKey(), signature, data)){
+                                return;
+                            }
+                        }catch(NoSuchAlgorithmException | InvalidKeyException | SignatureException e){
+                            e.printStackTrace();
+                        }
+
                         m.setOrigin(packet.getAddress(), packet.getPort());
 
                         if(m.getPublic() != null){
@@ -397,8 +433,27 @@ public class Server {
         message.setUID(kademlia.routingTable.getDerivedUID());
         message.setPublicKey(keyPair.getPublic());
 
-        byte[] data = message.encode().encode();
-        server.send(new DatagramPacket(data, 0, data.length, message.getDestination()));
+        try{
+            byte[] data = message.encode().encode();
+            byte[] signature = KeyUtils.sign(keyPair.getPrivate(), data);
+
+            /*
+            byte[] len = new byte[4];
+            len[0] = ((byte) signature.length);
+            len[1] = ((byte) (signature.length >> 8));
+            len[2] = ((byte) (signature.length >> 16));
+            len[3] = ((byte) (signature.length >> 24));
+            */
+
+            byte[] packet = new byte[data.length+256];//+signature.length+4];
+            System.arraycopy(signature, 0, packet, 0, signature.length);
+            System.arraycopy(data, 0, packet, signature.length, data.length);
+
+            server.send(new DatagramPacket(packet, 0, packet.length, message.getDestination()));
+
+        }catch(NoSuchAlgorithmException | InvalidKeyException | SignatureException e){
+            e.printStackTrace();
+        }
     }
 
     public void send(MessageBase message, ResponseCallback callback)throws IOException {
@@ -408,7 +463,6 @@ public class Server {
 
         byte[] tid = generateTransactionID();
         message.setTransactionID(tid);
-        message.setPublicKey(keyPair.getPublic());
         tracker.add(new ByteWrapper(tid), new Call(message, callback));
         send(message);
     }
@@ -420,7 +474,6 @@ public class Server {
 
         byte[] tid = generateTransactionID();
         message.setTransactionID(tid);
-        message.setPublicKey(keyPair.getPublic());
         tracker.add(new ByteWrapper(tid), new Call(message, node, callback));
         send(message);
     }
