@@ -3,7 +3,10 @@ package unet.shadowrouter;
 import unet.kad4.Kademlia;
 import unet.kad4.messages.GetPortRequest;
 import unet.kad4.messages.GetPortResponse;
+import unet.kad4.rpc.events.ResponseEvent;
+import unet.kad4.rpc.events.inter.ResponseCallback;
 import unet.kad4.utils.Node;
+import unet.shadowrouter.kad.SRequestListener;
 import unet.shadowrouter.server.TestServer;
 import unet.shadowrouter.tunnel.tcp.RelayServer;
 import unet.shadowrouter.tunnel.tcp.Tunnel;
@@ -32,7 +35,13 @@ public class RelayTest {
         Kademlia kad = new Kademlia();
         kad.getRoutingTable().setSecureOnly(false);
         kad.getRefreshHandler().setRefreshTime(30000);
+        kad.registerRequestListener(new SRequestListener(5880));
         kad.bind(7000);
+
+        RelayServer relayServer = new RelayServer(kad.getServer().getKeyPair());
+        relayServer.start(5880);
+        System.out.println("RELAY SERVER STARTED");
+
         System.out.println();
 
         Kademlia k2 = startNode(7001, 7000, 5881);
@@ -58,14 +67,27 @@ public class RelayTest {
                 k5.getRoutingTable().getAllNodes().size());
 
 
+        /*
         Map<Integer, Integer> portExchange = new HashMap<>();
         portExchange.put(7001, 5881);
         portExchange.put(7002, 5882);
         portExchange.put(7003, 5883);
         portExchange.put(7004, 5884);
+        */
 
         List<Node> nodes = kad.getRoutingTable().getAllNodes();
 
+        GetPortRequest request = new GetPortRequest();
+        request.setDestination(nodes.get(0).getAddress());
+        kad.getServer().send(request, new ResponseCallback(){
+            @Override
+            public void onResponse(ResponseEvent event){
+                System.out.println(nodes.get(0)+"  "+((GetPortResponse) event.getMessage()).getPort());
+            }
+        });
+
+
+        /*
         Tunnel tunnel = new Tunnel();
         tunnel.connect(nodes.get(0), portExchange.get(nodes.get(0).getPort())); //ENTRY
         //HANDSHAKE
@@ -208,6 +230,7 @@ public class RelayTest {
         Kademlia kad = new Kademlia();
         kad.getRoutingTable().setSecureOnly(false);
         kad.getRefreshHandler().setRefreshTime(30000);
+        kad.registerRequestListener(new SRequestListener(tcpPort));
         kad.join(port, InetAddress.getLocalHost(), remotePort);
         System.out.println();
 
