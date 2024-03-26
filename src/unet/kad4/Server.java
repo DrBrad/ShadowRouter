@@ -97,13 +97,17 @@ public class Server {
         return (server != null && !server.isClosed());
     }
 
+    public KeyPair getKeyPair(){
+        return keyPair;
+    }
+
     public int getPort(){
         return (server != null) ? server.getLocalPort() : 0;
     }
 
     private void onReceive(DatagramPacket packet){
         if(AddressUtils.isBogon(packet.getAddress(), packet.getPort())){
-            return;
+            //return;
         }
 
         //SPAM THROTTLE...
@@ -390,7 +394,7 @@ public class Server {
         }
 
         if(AddressUtils.isBogon(message.getDestination())){
-            throw new IllegalArgumentException("Message destination set to bogon");
+            //throw new IllegalArgumentException("Message destination set to bogon");
         }
 
         message.setUID(kademlia.routingTable.getDerivedUID());

@@ -1,5 +1,8 @@
 package unet.shadowrouter;
 
+import unet.kad4.Kademlia;
+import unet.kad4.messages.GetPortRequest;
+import unet.kad4.messages.GetPortResponse;
 import unet.shadowrouter.server.TestServer;
 import unet.shadowrouter.tunnel.tcp.RelayServer;
 import unet.shadowrouter.tunnel.tcp.Tunnel;
@@ -15,6 +18,29 @@ import java.security.PublicKey;
 public class RelayTest {
 
     public static void main(String[] args)throws Exception {
+
+        //MAKE SURE WE SIGN THE MESSAGES AS WELL...
+
+        Kademlia kad = new Kademlia();
+        kad.bind(7000);
+        System.out.println();
+
+        Kademlia k2 = new Kademlia();
+        k2.join(7001, InetAddress.getLocalHost(), 7000);
+        System.out.println();
+
+
+        //SHOULD WE MOVE THIS...?
+        //kad.getServer().getKeyPair();
+
+        System.out.println(kad.getRoutingTable().getAllNodes().size());
+        System.out.println(k2.getRoutingTable().getAllNodes().size());
+
+
+
+
+
+        System.exit(0);
 
         for(int i = 0; i < 20; i++){
         KeyPair keyPair = KeyUtils.generateKeyPair("RSA");

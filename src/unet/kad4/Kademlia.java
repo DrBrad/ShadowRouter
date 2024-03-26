@@ -1,9 +1,6 @@
 package unet.kad4;
 
-import unet.kad4.messages.FindNodeRequest;
-import unet.kad4.messages.FindNodeResponse;
-import unet.kad4.messages.PingRequest;
-import unet.kad4.messages.PingResponse;
+import unet.kad4.messages.*;
 import unet.kad4.messages.inter.Message;
 import unet.kad4.messages.inter.MessageBase;
 import unet.kad4.messages.inter.MessageKey;
@@ -72,6 +69,8 @@ public class Kademlia {
             registerMessage(PingResponse.class);
             registerMessage(FindNodeRequest.class);
             registerMessage(FindNodeResponse.class);
+            registerMessage(GetPortRequest.class);
+            registerMessage(GetPortResponse.class);
 
             refresh.addOperation(bucketRefreshTask);
             refresh.addOperation(new StaleRefreshTask());
