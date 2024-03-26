@@ -1,6 +1,7 @@
 package unet.shadowrouter;
 
 import unet.kad4.Kademlia;
+import unet.kad4.kad.KademliaBase;
 import unet.kad4.messages.GetPortRequest;
 import unet.kad4.messages.GetPortResponse;
 import unet.kad4.rpc.events.ResponseEvent;
@@ -19,6 +20,7 @@ import java.net.InetAddress;
 import java.net.InetSocketAddress;
 import java.security.KeyPair;
 import java.security.PublicKey;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -29,13 +31,83 @@ public class RelayTest {
 
     public static void main(String[] args)throws Exception {
 
+        //ARE WE CHECKING IPS BEFORE INSTERTING - DONT WANT DUPLICATE IPS...
+
         TestServer testServer = new TestServer();
         testServer.start(8080);
         System.out.println("TEST SERVER STARTED");
 
-        ShadowRouter shadowRouter = new ShadowRouter();
-        shadowRouter.startRelay(7000);
-        shadowRouter.bind(6000);
+        ShadowRouter router = new ShadowRouter();
+        router.startRelay(7000);
+        router.bind(6000);
+
+        List<KademliaBase> nodes = new ArrayList<>();
+
+        for(int i = 1; i < 62; i++){
+            ShadowRouter r = new ShadowRouter();
+            r.startRelay(7000+i);
+            r.join(6000+i, InetAddress.getLocalHost(), 6000+(i-1));
+            nodes.add(r);
+
+            Thread.sleep(1000);
+        }
+
+
+        int i = 0;
+
+        while(true){
+            StringBuilder b = new StringBuilder();
+            b.append(router.getRoutingTable().getAllNodes().size());
+            for(KademliaBase k : nodes){
+                b.append(" | "+k.getRoutingTable().getAllNodes().size());
+            }
+            System.out.println(b.toString());
+
+            Thread.sleep(3000);
+
+            if(i == 10){
+                break;
+            }
+
+            i++;
+        }
+
+        System.err.println("TRYING TUNNEL");
+
+        List<Node> ns = router.getRoutingTable().getAllNodes();
+
+        GetPortRequest request = new GetPortRequest();
+        request.setDestination(ns.get(0).getAddress());
+        router.getServer().send(request, new ResponseCallback(){
+            @Override
+            public void onResponse(ResponseEvent event){
+                GetPortResponse response = (GetPortResponse) event.getMessage();
+
+                try{
+                    Tunnel tunnel = new Tunnel();
+                    tunnel.connect(ns.get(0), response.getPort()); //ENTRY
+
+                    tunnel.exit(new InetSocketAddress(InetAddress.getLocalHost(), 8080));
+
+                    InputStream in = tunnel.getInputStream();
+                    OutputStream out = tunnel.getOutputStream();
+
+                    out.write("HELLO WORLD".getBytes());
+                    out.flush();
+
+                    byte[] buf = new byte[4096];
+                    int len = in.read(buf);
+                    System.out.println("CLIENT: "+new String(buf, 0, len));
+
+                    tunnel.close();
+                    System.err.println("CLOSED 2");
+                }catch(Exception e){
+                    e.printStackTrace();
+                }
+
+                //System.out.println(nodes.get(0)+"  "+((GetPortResponse) event.getMessage()).getPort());
+            }
+        });
 
 
         /*
@@ -89,6 +161,7 @@ public class RelayTest {
         portExchange.put(7004, 5884);
         */
 
+        /*
         List<Node> nodes = kad.getRoutingTable().getAllNodes();
 
         GetPortRequest request = new GetPortRequest();

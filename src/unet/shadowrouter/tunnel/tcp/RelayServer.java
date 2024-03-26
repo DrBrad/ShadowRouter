@@ -45,7 +45,7 @@ public class RelayServer {
     }
 
     public boolean isRunning(){
-        return !server.isClosed();
+        return (server != null && !server.isClosed());
     }
 
     public int getPort(){
