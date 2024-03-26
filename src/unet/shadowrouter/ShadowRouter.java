@@ -68,6 +68,11 @@ public class ShadowRouter extends KademliaBase {
 
     public void startRelay(int port)throws IOException {
         relay.start(port);
+        try{
+            registerRequestListener(new SRequestListener(port));
+        }catch(NoSuchFieldException | IllegalAccessException | InvocationTargetException e){
+            e.printStackTrace();
+        }
     }
 
     @Override
