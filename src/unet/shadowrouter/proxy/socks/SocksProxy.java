@@ -1,5 +1,9 @@
 package unet.shadowrouter.proxy.socks;
 
+import unet.shadowrouter.proxy.socks.socks.Socks4;
+import unet.shadowrouter.proxy.socks.socks.Socks5;
+import unet.shadowrouter.proxy.socks.socks.SocksBase;
+
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
@@ -21,13 +25,17 @@ public class SocksProxy implements Runnable {
             in = socket.getInputStream();
             out = socket.getOutputStream();
 
+            SocksBase socks;
+
             //SOCKS VERSION
             switch(in.read()){
                 case 0x04:
+                    socks = new Socks4(this);
                     System.out.println("SOCKS 4");
                     break;
 
                 case 0x05:
+                    socks = new Socks5(this);
                     System.out.println("SOCKS 5");
                     break;
 
@@ -37,7 +45,7 @@ public class SocksProxy implements Runnable {
             }
 
             //COMMAND
-            switch(in.read()){
+            switch(socks.getCommand()){
                 case 0x01:
                     System.out.println("CONNECT");
                     //commons.connect();
@@ -60,5 +68,17 @@ public class SocksProxy implements Runnable {
         }catch(IOException e){
             e.printStackTrace();
         }
+    }
+
+    public Socket getSocket(){
+        return socket;
+    }
+
+    public InputStream getInputStream(){
+        return in;
+    }
+
+    public OutputStream getOutputStream(){
+        return out;
     }
 }
