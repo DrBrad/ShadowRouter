@@ -45,22 +45,22 @@ public class Socks5 extends SocksBase {
         byte[] addr;
         InetAddress address;
 
-        switch(atype){ //A-Type ( IPv4, DOMAIN, IPv6 )
-            case IPv4: {//IPv4
+        switch(atype){
+            case IPv4: {
                     addr = new byte[atype.getLength()];
                     proxy.getInputStream().read(addr);
                     address = InetAddress.getByAddress(addr);
                 }
                 break;
 
-            case DOMAIN: {//DOMAIN
+            case DOMAIN: {
                     addr = new byte[proxy.getInputStream().read()];
                     proxy.getInputStream().read(addr);
                     address = InetAddress.getByName(new String(addr));
                 }
                 break;
 
-            case IPv6: {//IPv6
+            case IPv6: {
                     addr = new byte[atype.getLength()];
                     proxy.getInputStream().read(addr);
                     address = InetAddress.getByAddress(addr);
