@@ -218,7 +218,11 @@ public class Relay implements Runnable {
         //while(!relay.isClosed() && !socket.isClosed()){
         //    relay.getInputStream().transferTo(out);
         //}
-        thread.interrupt();
+        try{
+            thread.join();
+        }catch(InterruptedException e){
+            e.printStackTrace();
+        }
 
         System.err.println("CLOSED");
 

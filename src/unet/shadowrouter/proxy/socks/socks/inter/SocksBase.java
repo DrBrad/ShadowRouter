@@ -45,7 +45,12 @@ public abstract class SocksBase {
         //while(!relay.isClosed() && !socket.isClosed()){
         //    relay.getInputStream().transferTo(out);
         //}
-        thread.interrupt();
+        try{
+            thread.join();
+        }catch(InterruptedException e){
+            e.printStackTrace();
+        }
+
         tunnel.close();
     }
 
