@@ -203,7 +203,7 @@ public class Relay implements Runnable {
 
     public void relay(InetSocketAddress address)throws IOException {
         Socket relay = new Socket();
-        System.out.println(address.getAddress().getHostAddress()+"  "+address.getPort());
+        //System.out.println(address.getAddress().getHostAddress()+"  "+address.getPort());
         relay.connect(address);
 
         Thread thread = new Thread(new Runnable(){
