@@ -89,8 +89,10 @@ public class Tunnel {
                 break;
         }
 
-        out.write((port & 0xff00) >> 8);
-        out.write(port & 0xff);
+        out.write(new byte[]{
+                (byte) ((port & 0xff00) >> 8),
+                (byte) (port & 0xff)
+        });
 
         out.flush();
     }

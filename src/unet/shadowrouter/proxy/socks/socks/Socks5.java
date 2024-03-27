@@ -32,6 +32,7 @@ public class Socks5 extends SocksBase {
     public Command getCommand()throws IOException {
         if(!authenticate()){
             replyCommand(ReplyCode.GENERAL_FAILURE);
+            proxy.getSocket().close();
             throw new IOException("Failed to authenticate.");
         }
 
@@ -39,6 +40,7 @@ public class Socks5 extends SocksBase {
 
         if(proxy.getInputStream().read() != SOCKS_VERSION){
             replyCommand(ReplyCode.UNASSIGNED);
+            proxy.getSocket().close();
             throw new IOException("Invalid Socks version");
         }
         Command command = Command.getCommandFromCode((byte) proxy.getInputStream().read());
@@ -81,6 +83,7 @@ public class Socks5 extends SocksBase {
 
             default:
                 replyCommand(ReplyCode.A_TYPE_NOT_SUPPORTED);
+                proxy.getSocket().close();
                 throw new IOException("Invalid A-Type.");
         }
 
@@ -102,6 +105,11 @@ public class Socks5 extends SocksBase {
             */
 
             List<Node> nodes = proxy.getKademlia().getRoutingTable().getAllNodes();
+            if(nodes.size() < 3){
+                replyCommand(ReplyCode.GENERAL_FAILURE);
+                throw new IOException("Not enough nodes to relay off of.");
+            }
+
             Collections.shuffle(nodes);
 
 
@@ -123,11 +131,12 @@ public class Socks5 extends SocksBase {
                         replyCommand(ReplyCode.GRANTED);
 
                         relay(tunnel);
+                        proxy.getSocket().close();
 
                     }catch(Exception e){
-                        //e.printStackTrace();
                         try{
                             replyCommand(ReplyCode.HOST_UNREACHABLE);//, address);
+                            proxy.getSocket().close();
                         }catch(IOException ex){
 
                         }
