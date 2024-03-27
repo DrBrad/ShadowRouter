@@ -95,6 +95,7 @@ public class Socks5 extends SocksBase {
     @Override
     public void connect()throws IOException {
         try{
+            /*
             Socket socket = new Socket();
 
             InetSocketAddress address;
@@ -116,8 +117,8 @@ public class Socks5 extends SocksBase {
             replyCommand(ReplyCode.GRANTED, address);
 
             relay(socket);
+            */
 
-        /*
             List<Node> nodes = proxy.getKademlia().getRoutingTable().getAllNodes();
             if(nodes.size() < 3){
                 replyCommand(ReplyCode.GENERAL_FAILURE);
@@ -192,7 +193,6 @@ public class Socks5 extends SocksBase {
                     }
                 }
             });
-        */
         }catch(IOException e){
         }
     }

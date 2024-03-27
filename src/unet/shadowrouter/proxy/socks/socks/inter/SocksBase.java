@@ -28,12 +28,12 @@ public abstract class SocksBase {
 
     //private boolean complete;
 
-    public void relay(/*Tunnel tunnel*/Socket socket)throws IOException {
+    public void relay(Tunnel tunnel)throws IOException {
         Thread thread = new Thread(new Runnable(){
             @Override
             public void run(){
                 try{
-                    transfer(proxy.getInputStream(), socket.getOutputStream());
+                    transfer(proxy.getInputStream(), tunnel.getOutputStream());
                     //while(!socket.isClosed() && !relay.isClosed()){
                     //    in.transferTo(relay.getOutputStream());
                     //}
@@ -57,7 +57,7 @@ public abstract class SocksBase {
         thread.start();
 
         try{
-            transfer(socket.getInputStream(), proxy.getOutputStream());
+            transfer(tunnel.getInputStream(), proxy.getOutputStream());
         }catch(IOException e){
             //e.printStackTrace();
         }
