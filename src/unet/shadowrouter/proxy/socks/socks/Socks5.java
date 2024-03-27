@@ -3,6 +3,7 @@ package unet.shadowrouter.proxy.socks.socks;
 import unet.shadowrouter.proxy.socks.SocksProxy;
 import unet.shadowrouter.proxy.socks.socks.inter.AType;
 import unet.shadowrouter.proxy.socks.socks.inter.Command;
+import unet.shadowrouter.proxy.socks.socks.inter.ReplyCode;
 import unet.shadowrouter.proxy.socks.socks.inter.SocksBase;
 
 import java.io.IOException;
@@ -13,6 +14,8 @@ import java.net.Socket;
 
 public class Socks5 extends SocksBase {
 
+    public static final byte SOCKS_VERSION = 0x05;
+
     private InetSocketAddress address;
 
     public Socks5(SocksProxy proxy){
@@ -22,20 +25,20 @@ public class Socks5 extends SocksBase {
     @Override
     public Command getCommand()throws IOException {
         if(!authenticate()){
-            //SEND ERROR CODE...
+            replyCommand(ReplyCode.GENERAL_FAILURE);
             throw new IOException("Failed to authenticate.");
         }
 
-        proxy.getOutputStream().write(new byte[]{ 0x05, 0x00 });
+        proxy.getOutputStream().write(new byte[]{ SOCKS_VERSION, 0x00 });
 
-        if(proxy.getInputStream().read() != 0x05){
-            replyCommand((byte) 0xff);
+        if(proxy.getInputStream().read() != SOCKS_VERSION){
+            replyCommand(ReplyCode.UNASSIGNED);
             throw new IOException("Invalid Socks version");
         }
         Command command = Command.getCommandFromCode((byte) proxy.getInputStream().read());
 
         if(command.equals(Command.INVALID)){
-            replyCommand((byte) 0x07);
+            replyCommand(ReplyCode.COMMAND_NOT_SUPPORTED);
         }
 
         //RSV
@@ -65,7 +68,7 @@ public class Socks5 extends SocksBase {
                 break;
 
             default:
-                replyCommand((byte) 0x08);
+                replyCommand(ReplyCode.A_TYPE_NOT_SUPPORTED);
                 throw new IOException("Invalid A-Type.");
         }
 
@@ -80,14 +83,14 @@ public class Socks5 extends SocksBase {
         try{
             Socket server = new Socket();
             server.connect(address);
-            replyCommand((byte) 0x00);
+            replyCommand(ReplyCode.GRANTED);
 
             relay(server);
 
             server.close();
 
         }catch(IOException e){
-            replyCommand((byte) 0x04);
+            replyCommand(ReplyCode.HOST_UNREACHABLE);
         }
     }
 
@@ -111,21 +114,23 @@ public class Socks5 extends SocksBase {
         return (methods.indexOf("-0-") != -1 || methods.indexOf("-00-") != -1);
     }
 
-    private void replyCommand(byte replyCode)throws IOException {
+    private void replyCommand(ReplyCode code)throws IOException {
         byte[] reply;
 
         if(address == null){
             reply = new byte[10];
+            reply[3] = AType.IPv4.getCode();
+
         }else{
             reply = new byte[6+address.getAddress().getAddress().length];
-            reply[3] = (byte) ((address.getAddress() instanceof Inet4Address) ? 0x01 : 0x03);
+            reply[3] = (address.getAddress() instanceof Inet4Address) ? AType.IPv4.getCode() : AType.IPv6.getCode();
             System.arraycopy(address.getAddress().getAddress(), 0, reply, 4, reply.length-6);
-            reply[reply.length-2] = (byte)((address.getPort() & 0xFF00) >> 8);
-            reply[reply.length-1] = (byte)(address.getPort() & 0x00FF);
+            reply[reply.length-2] = (byte)((address.getPort() & 0xff00) >> 8);
+            reply[reply.length-1] = (byte)(address.getPort() & 0x00ff);
         }
 
-        reply[0] = 0x05;
-        reply[1] = replyCode;
+        reply[0] = SOCKS_VERSION;
+        reply[1] = code.getCode();
         reply[2] = 0x00;
 
         proxy.getOutputStream().write(reply);
