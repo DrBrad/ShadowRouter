@@ -69,6 +69,11 @@ public class Tunnel {
         handshake(node);
     }
 
+    public void exit(InetSocketAddress address){
+
+    }
+
+    //WE ARE NOT USING INET ADDRESS AS IT IMMEDIATLY DNS RESOLVES DOMAINS
     public void exit(byte[] address, int port, AddressType type)throws IOException {
         out.write(Command.RELAY.getCode());
         out.write(type.getCode());
