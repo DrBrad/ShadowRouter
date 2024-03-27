@@ -21,12 +21,12 @@ public abstract class SocksBase {
 
     public abstract void bind()throws IOException;
 
-    public void relay(Socket server)throws IOException {
+    public void relay(Socket socket)throws IOException {
         Thread thread = new Thread(new Runnable(){
             @Override
             public void run(){
                 try{
-                    transfer(proxy.getInputStream(), server.getOutputStream());
+                    transfer(proxy.getInputStream(), socket.getOutputStream());
                     //while(!socket.isClosed() && !relay.isClosed()){
                     //    in.transferTo(relay.getOutputStream());
                     //}
@@ -37,11 +37,12 @@ public abstract class SocksBase {
         });//.start();
         thread.start();
 
-        transfer(server.getInputStream(), proxy.getOutputStream());
+        transfer(socket.getInputStream(), proxy.getOutputStream());
         //while(!relay.isClosed() && !socket.isClosed()){
         //    relay.getInputStream().transferTo(out);
         //}
         thread.interrupt();
+        socket.close();
     }
 
     private void transfer(InputStream in, OutputStream out)throws IOException {

@@ -7,10 +7,7 @@ import unet.shadowrouter.proxy.socks.socks.inter.ReplyCode;
 import unet.shadowrouter.proxy.socks.socks.inter.SocksBase;
 
 import java.io.IOException;
-import java.net.Inet4Address;
-import java.net.InetAddress;
-import java.net.InetSocketAddress;
-import java.net.Socket;
+import java.net.*;
 
 public class Socks5 extends SocksBase {
 
@@ -84,13 +81,11 @@ public class Socks5 extends SocksBase {
     @Override
     public void connect()throws IOException {
         try{
-            Socket server = new Socket();
-            server.connect(address);
+            Socket socket = new Socket();
+            socket.connect(address);
             replyCommand(ReplyCode.GRANTED, address);
 
-            relay(server);
-
-            server.close();
+            relay(socket);
 
         }catch(IOException e){
             replyCommand(ReplyCode.HOST_UNREACHABLE, address);
@@ -99,7 +94,23 @@ public class Socks5 extends SocksBase {
 
     @Override
     public void bind()throws IOException {
+        //NOT SURE HOW WE WANT TO HANDLE THIS ONE...
+        try{
+            ServerSocket server = new ServerSocket(0);
+            replyCommand(ReplyCode.GRANTED, new InetSocketAddress(InetAddress.getLocalHost(), server.getLocalPort()));
 
+            //DO WE LOOP THIS...?
+            Socket socket ;
+            while((socket = server.accept()) != null){
+                replyCommand(ReplyCode.GRANTED, new InetSocketAddress(socket.getInetAddress(), socket.getPort()));
+                relay(socket);
+            }
+
+            server.close();
+
+        }catch(IOException e){
+            replyCommand(ReplyCode.CONNECTION_NOT_ALLOWED);
+        }
     }
 
     public void udp()throws IOException {
