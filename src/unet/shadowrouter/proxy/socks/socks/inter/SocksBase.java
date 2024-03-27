@@ -25,6 +25,8 @@ public abstract class SocksBase {
 
     public abstract void bind()throws IOException;
 
+    private boolean complete;
+
     public void relay(Tunnel tunnel)throws IOException {
         Thread thread = new Thread(new Runnable(){
             @Override
@@ -37,21 +39,34 @@ public abstract class SocksBase {
                 }catch(IOException e){
                     //e.printStackTrace();
                 }
+
+                if(complete){
+                    try{
+                        tunnel.close();
+                        proxy.getSocket().close();
+                    }catch(IOException e){
+                    }
+                    return;
+                }
+                complete = true;
             }
         });//.start();
         thread.start();
 
-        transfer(tunnel.getInputStream(), proxy.getOutputStream());
+        try{
+            transfer(tunnel.getInputStream(), proxy.getOutputStream());
+        }catch(IOException e){
+            //e.printStackTrace();
+        }
         //while(!relay.isClosed() && !socket.isClosed()){
         //    relay.getInputStream().transferTo(out);
         //}
-        try{
-            thread.join();
-        }catch(InterruptedException e){
-            e.printStackTrace();
+        if(complete){
+            tunnel.close();
+            proxy.getSocket().close();
+            return;
         }
-
-        tunnel.close();
+        complete = true;
     }
 
     private void transfer(InputStream in, OutputStream out)throws IOException {
@@ -61,5 +76,8 @@ public abstract class SocksBase {
             out.write(buf, 0, len);
             out.flush();
         }
+
+        in.close();
+        out.close();
     }
 }

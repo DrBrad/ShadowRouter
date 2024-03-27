@@ -194,6 +194,8 @@ public class Relay implements Runnable {
         });
     }
 
+    private boolean complete;
+
     public void relay(InetSocketAddress address)throws IOException {
         Socket relay = new Socket();
         //System.out.println(address.getAddress().getHostAddress()+"  "+address.getPort());
@@ -210,27 +212,37 @@ public class Relay implements Runnable {
                 }catch(IOException e){
                     //e.printStackTrace();
                 }
+
+                if(complete){
+                    try{
+                        System.err.println("CLOSED");
+                        relay.close();
+                        socket.close();
+                    }catch(IOException e){
+                    }
+                    return;
+                }
+                complete = true;
             }
         });//.start();
         thread.start();
 
-        transfer(relay.getInputStream(), out);
+        try{
+            transfer(relay.getInputStream(), out);
+        }catch(IOException e){
+            //e.printStackTrace();
+        }
         //while(!relay.isClosed() && !socket.isClosed()){
         //    relay.getInputStream().transferTo(out);
         //}
-        try{
-            thread.join();
-        }catch(InterruptedException e){
-            e.printStackTrace();
+
+        if(complete){
+            System.err.println("CLOSED");
+            relay.close();
+            socket.close();
+            return;
         }
-
-        System.err.println("CLOSED");
-
-        relay.close();
-
-        in.close();
-        out.close();
-        socket.close();
+        complete = true;
     }
 
     private void transfer(InputStream in, OutputStream out)throws IOException {
