@@ -1,12 +1,19 @@
 package unet.shadowrouter.proxy.socks;
 
+import unet.kad4.kad.KademliaBase;
+
 import java.io.IOException;
 import java.net.ServerSocket;
 import java.net.Socket;
 
 public class SocksProxyServer {
 
+    private KademliaBase kademlia;
     private ServerSocket server;
+
+    public SocksProxyServer(KademliaBase kademlia){
+        this.kademlia = kademlia;
+    }
 
     public void start(int port)throws IOException {
         if(isRunning()){
@@ -21,7 +28,7 @@ public class SocksProxyServer {
                 try{
                     Socket socket;
                     while((socket = server.accept()) != null){
-                        new Thread(new SocksProxy(socket)).start();
+                        new Thread(new SocksProxy(kademlia, socket)).start();
                     }
                 }catch(IOException e){
                     e.printStackTrace();

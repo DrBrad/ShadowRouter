@@ -1,15 +1,19 @@
 package unet.shadowrouter.proxy.socks.socks.inter;
 
 import unet.shadowrouter.proxy.socks.SocksProxy;
+import unet.shadowrouter.tunnel.inter.AddressType;
+import unet.shadowrouter.tunnel.tcp.Tunnel;
 
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
-import java.net.Socket;
 
 public abstract class SocksBase {
 
     protected SocksProxy proxy;
+    protected AddressType atype;
+    protected byte[] address;
+    protected int port;
 
     public SocksBase(SocksProxy proxy){
         this.proxy = proxy;
@@ -21,12 +25,12 @@ public abstract class SocksBase {
 
     public abstract void bind()throws IOException;
 
-    public void relay(Socket socket)throws IOException {
+    public void relay(Tunnel tunnel)throws IOException {
         Thread thread = new Thread(new Runnable(){
             @Override
             public void run(){
                 try{
-                    transfer(proxy.getInputStream(), socket.getOutputStream());
+                    transfer(proxy.getInputStream(), tunnel.getOutputStream());
                     //while(!socket.isClosed() && !relay.isClosed()){
                     //    in.transferTo(relay.getOutputStream());
                     //}
@@ -37,12 +41,12 @@ public abstract class SocksBase {
         });//.start();
         thread.start();
 
-        transfer(socket.getInputStream(), proxy.getOutputStream());
+        transfer(tunnel.getInputStream(), proxy.getOutputStream());
         //while(!relay.isClosed() && !socket.isClosed()){
         //    relay.getInputStream().transferTo(out);
         //}
         thread.interrupt();
-        socket.close();
+        tunnel.close();
     }
 
     private void transfer(InputStream in, OutputStream out)throws IOException {

@@ -60,10 +60,9 @@ public class Tunnel {
     */
     public void relay(Node node)throws IOException, NoSuchAlgorithmException, InvalidKeyException, SignatureException,
             InvalidKeySpecException, NoSuchPaddingException, InvalidAlgorithmParameterException {
-        byte[] addr = AddressUtils.packAddress(node.getAddress());
         out.write(Command.RESOLVE_PORT.getCode());
         out.write((node.getHostAddress() instanceof Inet4Address) ? AddressType.IPv4.getCode() : AddressType.IPv6.getCode());
-        out.write(addr);
+        out.write(AddressUtils.packAddress(node.getAddress()));
         out.flush();
 
         handshake(node);

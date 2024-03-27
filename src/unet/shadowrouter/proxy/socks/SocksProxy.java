@@ -1,5 +1,6 @@
 package unet.shadowrouter.proxy.socks;
 
+import unet.kad4.kad.KademliaBase;
 import unet.shadowrouter.proxy.socks.socks.Socks4;
 import unet.shadowrouter.proxy.socks.socks.Socks5;
 import unet.shadowrouter.proxy.socks.socks.inter.SocksBase;
@@ -11,11 +12,13 @@ import java.net.Socket;
 
 public class SocksProxy implements Runnable {
 
+    private KademliaBase kademlia;
     private Socket socket;
     private InputStream in;
     private OutputStream out;
 
-    public SocksProxy(Socket socket){
+    public SocksProxy(KademliaBase kademlia, Socket socket){
+        this.kademlia = kademlia;
         this.socket = socket;
     }
 
@@ -70,6 +73,10 @@ public class SocksProxy implements Runnable {
         }catch(IOException e){
             e.printStackTrace();
         }
+    }
+
+    public KademliaBase getKademlia(){
+        return kademlia;
     }
 
     public Socket getSocket(){

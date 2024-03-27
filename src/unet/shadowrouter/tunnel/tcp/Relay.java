@@ -58,21 +58,24 @@ public class Relay implements Runnable {
 
             switch(atype){
                 case IPv4:
-                    addr = new byte[6];
+                    addr = new byte[atype.getLength()];
                     in.read(addr);
                     address = AddressUtils.unpackAddress(addr);
+                    System.out.println(address.getAddress().getHostAddress()+" "+address.getPort()+" - IPv4");
                     break;
 
                 case IPv6:
-                    addr = new byte[18];
+                    addr = new byte[atype.getLength()];
                     in.read(addr);
                     address = AddressUtils.unpackAddress(addr);
+                    System.out.println(address.getAddress().getHostAddress()+" "+address.getPort()+" - IPv6");
                     break;
 
                 case DOMAIN:
                     addr = new byte[in.read()];
                     in.read(addr);
                     address = new InetSocketAddress(InetAddress.getByName(new String(addr)), ((in.read() << 8) | in.read() & 0xff));
+                    System.out.println(new String(addr)+" "+address.getPort()+" - DOMAIN");
                     break;
 
                 default:

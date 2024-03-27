@@ -1,19 +1,28 @@
 package unet.shadowrouter.proxy.socks.socks;
 
+import unet.kad4.messages.GetPortRequest;
+import unet.kad4.messages.GetPortResponse;
+import unet.kad4.rpc.events.ResponseEvent;
+import unet.kad4.rpc.events.inter.ResponseCallback;
+import unet.kad4.utils.Node;
 import unet.shadowrouter.proxy.socks.SocksProxy;
 import unet.shadowrouter.proxy.socks.socks.inter.AType;
 import unet.shadowrouter.proxy.socks.socks.inter.Command;
 import unet.shadowrouter.proxy.socks.socks.inter.ReplyCode;
 import unet.shadowrouter.proxy.socks.socks.inter.SocksBase;
+import unet.shadowrouter.tunnel.inter.AddressType;
+import unet.shadowrouter.tunnel.tcp.Tunnel;
 
 import java.io.IOException;
 import java.net.*;
+import java.util.Collections;
+import java.util.List;
 
 public class Socks5 extends SocksBase {
 
     public static final byte SOCKS_VERSION = 0x05;
 
-    private InetSocketAddress address;
+    //private InetSocketAddress address;
 
     public Socks5(SocksProxy proxy){
         super(proxy);
@@ -42,29 +51,32 @@ public class Socks5 extends SocksBase {
         proxy.getInputStream().read();
 
         AType atype = AType.getATypeFromCode((byte) proxy.getInputStream().read());
-        byte[] addr;
-        InetAddress address;
+        //byte[] addr;
+        //InetAddress address;
 
         switch(atype){
             case IPv4:
-                addr = new byte[atype.getLength()];
-                proxy.getInputStream().read(addr);
-                address = InetAddress.getByAddress(addr);
-                System.out.println(new String(addr));
+                this.atype = AddressType.IPv4;
+                address = new byte[atype.getLength()];
+                proxy.getInputStream().read(address);
+                //address = InetAddress.getByAddress(addr);
+                //System.out.println(new String(addr));
                 break;
 
             case DOMAIN:
-                addr = new byte[proxy.getInputStream().read()];
-                proxy.getInputStream().read(addr);
-                System.out.println(new String(addr));
-                address = InetAddress.getByName(new String(addr));
+                this.atype = AddressType.DOMAIN;
+                address = new byte[proxy.getInputStream().read()];
+                proxy.getInputStream().read(address);
+                //System.out.println(new String(addr));
+                //address = InetAddress.getByName(new String(addr));
                 break;
 
             case IPv6:
-                addr = new byte[atype.getLength()];
-                proxy.getInputStream().read(addr);
-                address = InetAddress.getByAddress(addr);
-                System.out.println(new String(addr));
+                this.atype = AddressType.IPv6;
+                address = new byte[atype.getLength()];
+                proxy.getInputStream().read(address);
+                //address = InetAddress.getByAddress(addr);
+                //System.out.println(new String(addr));
                 break;
 
             default:
@@ -72,29 +84,65 @@ public class Socks5 extends SocksBase {
                 throw new IOException("Invalid A-Type.");
         }
 
-        int port = ((proxy.getInputStream().read() & 0xff) << 8) | (proxy.getInputStream().read() & 0xff);
-        this.address = new InetSocketAddress(address, port);
+        port = ((proxy.getInputStream().read() & 0xff) << 8) | (proxy.getInputStream().read() & 0xff);
+        //this.address = new InetSocketAddress(address, port);
 
         return command;
     }
 
     @Override
     public void connect()throws IOException {
-        try{
+        //try{
+            /*
             Socket socket = new Socket();
             socket.connect(address);
             replyCommand(ReplyCode.GRANTED, address);
 
             relay(socket);
+            */
 
-        }catch(IOException e){
-            replyCommand(ReplyCode.HOST_UNREACHABLE, address);
-        }
+            List<Node> nodes = proxy.getKademlia().getRoutingTable().getAllNodes();
+            Collections.shuffle(nodes);
+
+
+            GetPortRequest request = new GetPortRequest();
+            request.setDestination(nodes.get(0).getAddress());
+            proxy.getKademlia().getServer().send(request, new ResponseCallback(){
+                @Override
+                public void onResponse(ResponseEvent event){
+                    GetPortResponse response = (GetPortResponse) event.getMessage();
+
+                    try{
+                        Tunnel tunnel = new Tunnel();
+                        tunnel.connect(nodes.get(0), response.getPort()); //ENTRY
+                        tunnel.relay(nodes.get(1));
+                        tunnel.relay(nodes.get(2));
+                        tunnel.exit(address, port, atype);
+                        System.out.println("EXITING AT: "+new String(address)+"  "+port+"  "+atype);
+
+                        replyCommand(ReplyCode.GRANTED);
+
+                        relay(tunnel);
+
+                    }catch(Exception e){
+                        //e.printStackTrace();
+                        try{
+                            replyCommand(ReplyCode.HOST_UNREACHABLE);//, address);
+                        }catch(IOException ex){
+
+                        }
+                    }
+                }
+            });
+
+        //}catch(IOException e){
+        //}
     }
 
     @Override
     public void bind()throws IOException {
         //NOT SURE HOW WE WANT TO HANDLE THIS ONE...
+        /*
         try{
             ServerSocket server = new ServerSocket(0);
             replyCommand(ReplyCode.GRANTED, new InetSocketAddress(InetAddress.getLocalHost(), server.getLocalPort()));
@@ -111,6 +159,7 @@ public class Socks5 extends SocksBase {
         }catch(IOException e){
             replyCommand(ReplyCode.CONNECTION_NOT_ALLOWED);
         }
+        */
     }
 
     public void udp()throws IOException {
