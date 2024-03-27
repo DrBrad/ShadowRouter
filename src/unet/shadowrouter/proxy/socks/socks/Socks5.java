@@ -2,7 +2,9 @@ package unet.shadowrouter.proxy.socks.socks;
 
 import unet.kad4.messages.GetPortRequest;
 import unet.kad4.messages.GetPortResponse;
+import unet.kad4.rpc.events.ErrorResponseEvent;
 import unet.kad4.rpc.events.ResponseEvent;
+import unet.kad4.rpc.events.StalledEvent;
 import unet.kad4.rpc.events.inter.ResponseCallback;
 import unet.kad4.utils.Node;
 import unet.shadowrouter.proxy.socks.SocksProxy;
@@ -150,6 +152,28 @@ public class Socks5 extends SocksBase {
 
                         }catch(IOException ex){
                         }
+                    }
+                }
+
+                @Override
+                public void onErrorResponse(ErrorResponseEvent event){
+                    try{
+                        System.out.println("ERROR - GET_PORT");
+                        replyCommand(ReplyCode.GENERAL_FAILURE);//, address);
+                        proxy.getSocket().close();
+
+                    }catch(IOException e){
+                    }
+                }
+
+                @Override
+                public void onStalled(StalledEvent event){
+                    try{
+                        System.out.println("Stalled - GET_PORT");
+                        replyCommand(ReplyCode.GENERAL_FAILURE);//, address);
+                        proxy.getSocket().close();
+
+                    }catch(IOException e){
                     }
                 }
             });

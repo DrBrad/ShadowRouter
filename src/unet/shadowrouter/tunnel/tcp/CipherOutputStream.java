@@ -21,10 +21,6 @@ public class CipherOutputStream extends FilterOutputStream {
         out.flush();
     }
 
-    public void write(int value)throws IOException {
-        write(new byte[]{ (byte) value }, 0, 1);
-    }
-
     public void write(byte[] buf)throws IOException {
         write(buf, 0, buf.length);
     }

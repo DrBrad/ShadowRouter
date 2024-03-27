@@ -171,6 +171,7 @@ public class Relay implements Runnable {
             @Override
             public void onErrorResponse(ErrorResponseEvent event){
                 try{
+                    System.out.println("ERROR - GET_PORT");
                     in.close();
                     out.close();
                     socket.close();
@@ -182,6 +183,7 @@ public class Relay implements Runnable {
             @Override
             public void onStalled(StalledEvent event){
                 try{
+                    System.out.println("Stalled - GET_PORT");
                     in.close();
                     out.close();
                     socket.close();
