@@ -7,6 +7,7 @@ import unet.shadowrouter.tunnel.tcp.Tunnel;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.net.Socket;
 
 public abstract class SocksBase {
 
@@ -27,12 +28,12 @@ public abstract class SocksBase {
 
     //private boolean complete;
 
-    public void relay(Tunnel tunnel)throws IOException {
+    public void relay(/*Tunnel tunnel*/Socket socket)throws IOException {
         Thread thread = new Thread(new Runnable(){
             @Override
             public void run(){
                 try{
-                    transfer(proxy.getInputStream(), tunnel.getOutputStream());
+                    transfer(proxy.getInputStream(), socket.getOutputStream());
                     //while(!socket.isClosed() && !relay.isClosed()){
                     //    in.transferTo(relay.getOutputStream());
                     //}
@@ -56,7 +57,7 @@ public abstract class SocksBase {
         thread.start();
 
         try{
-            transfer(tunnel.getInputStream(), proxy.getOutputStream());
+            transfer(socket.getInputStream(), proxy.getOutputStream());
         }catch(IOException e){
             //e.printStackTrace();
         }

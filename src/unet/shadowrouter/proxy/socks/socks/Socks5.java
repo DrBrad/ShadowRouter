@@ -94,15 +94,30 @@ public class Socks5 extends SocksBase {
 
     @Override
     public void connect()throws IOException {
-        //try{
-            /*
+        try{
             Socket socket = new Socket();
+
+            InetSocketAddress address;
+            switch(atype){
+                case IPv4:
+                case IPv6:
+                    address = new InetSocketAddress(InetAddress.getByAddress(this.address), port);
+                    break;
+
+                case DOMAIN:
+                    address = new InetSocketAddress(InetAddress.getByName(new String(this.address)), port);
+                    break;
+
+                default:
+                    return;
+            }
+
             socket.connect(address);
             replyCommand(ReplyCode.GRANTED, address);
 
             relay(socket);
-            */
 
+        /*
             List<Node> nodes = proxy.getKademlia().getRoutingTable().getAllNodes();
             if(nodes.size() < 3){
                 replyCommand(ReplyCode.GENERAL_FAILURE);
@@ -177,9 +192,9 @@ public class Socks5 extends SocksBase {
                     }
                 }
             });
-
-        //}catch(IOException e){
-        //}
+        */
+        }catch(IOException e){
+        }
     }
 
     @Override
