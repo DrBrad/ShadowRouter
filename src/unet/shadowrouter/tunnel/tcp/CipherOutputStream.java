@@ -36,6 +36,7 @@ public class CipherOutputStream extends FilterOutputStream {
         out.write(cipher.update(buf, off, len));
     }
 
+    /*
     public void close()throws IOException {
         try{
             byte[] buf = cipher.doFinal();
@@ -48,4 +49,5 @@ public class CipherOutputStream extends FilterOutputStream {
         }
         out.close();
     }
+    */
 }
