@@ -83,14 +83,14 @@ public class Socks5 extends SocksBase {
         try{
             Socket server = new Socket();
             server.connect(address);
-            replyCommand(ReplyCode.GRANTED);
+            replyCommand(ReplyCode.GRANTED, address);
 
             relay(server);
 
             server.close();
 
         }catch(IOException e){
-            replyCommand(ReplyCode.HOST_UNREACHABLE);
+            replyCommand(ReplyCode.HOST_UNREACHABLE, address);
         }
     }
 
@@ -115,23 +115,26 @@ public class Socks5 extends SocksBase {
     }
 
     private void replyCommand(ReplyCode code)throws IOException {
-        byte[] reply;
-
-        if(address == null){
-            reply = new byte[10];
-            reply[3] = AType.IPv4.getCode();
-
-        }else{
-            reply = new byte[6+address.getAddress().getAddress().length];
-            reply[3] = (address.getAddress() instanceof Inet4Address) ? AType.IPv4.getCode() : AType.IPv6.getCode();
-            System.arraycopy(address.getAddress().getAddress(), 0, reply, 4, reply.length-6);
-            reply[reply.length-2] = (byte)((address.getPort() & 0xff00) >> 8);
-            reply[reply.length-1] = (byte)(address.getPort() & 0x00ff);
-        }
+        byte[] reply = new byte[10];
 
         reply[0] = SOCKS_VERSION;
         reply[1] = code.getCode();
         reply[2] = 0x00;
+        reply[3] = AType.IPv4.getCode();
+
+        proxy.getOutputStream().write(reply);
+    }
+
+    private void replyCommand(ReplyCode code, InetSocketAddress address)throws IOException {
+        byte[] reply = new byte[6+address.getAddress().getAddress().length];
+
+        reply[0] = SOCKS_VERSION;
+        reply[1] = code.getCode();
+        reply[2] = 0x00;
+        reply[3] = (address.getAddress() instanceof Inet4Address) ? AType.IPv4.getCode() : AType.IPv6.getCode();
+        System.arraycopy(address.getAddress().getAddress(), 0, reply, 4, reply.length-6);
+        reply[reply.length-2] = (byte)((address.getPort() & 0xff00) >> 8);
+        reply[reply.length-1] = (byte)(address.getPort() & 0x00ff);
 
         proxy.getOutputStream().write(reply);
     }
