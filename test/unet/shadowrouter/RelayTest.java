@@ -30,9 +30,11 @@ public class RelayTest {
 
         //ARE WE CHECKING IPS BEFORE INSTERTING - DONT WANT DUPLICATE IPS...
 
+        /*
         TestServer testServer = new TestServer();
         testServer.start(8080);
         System.out.println("TEST SERVER STARTED");
+        */
 
         ShadowRouter router = new ShadowRouter();
         router.startRelay(7000);
@@ -88,12 +90,15 @@ public class RelayTest {
                     tunnel.connect(ns.get(0), response.getPort()); //ENTRY
                     tunnel.relay(ns.get(1));
                     tunnel.relay(ns.get(2));
-                    tunnel.exit(new InetSocketAddress(InetAddress.getLocalHost(), 8080));
+                    tunnel.exit(new InetSocketAddress(InetAddress.getByName("info.cern.ch"), 80));
+                    //tunnel.exit(new InetSocketAddress(InetAddress.getLocalHost(), 8080));
 
                     InputStream in = tunnel.getInputStream();
                     OutputStream out = tunnel.getOutputStream();
 
-                    out.write("HELLO WORLD".getBytes());
+                    //out.write("HELLO WORLD".getBytes());
+                    out.write("GET / HTTP/1.1\r\n".getBytes());
+                    out.write("Host: info.cern.ch\r\n\r\n".getBytes());
                     out.flush();
 
                     byte[] buf = new byte[4096];
