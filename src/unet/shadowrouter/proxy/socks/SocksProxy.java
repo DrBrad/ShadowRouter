@@ -31,13 +31,13 @@ public class SocksProxy implements Runnable {
             switch(in.read()){
                 case 0x04:
                     socks = new Socks4(this);
-                    System.out.println("SOCKS 4");
+                    //System.out.println("SOCKS 4");
                     socket.close();
                     return;
 
                 case 0x05:
                     socks = new Socks5(this);
-                    System.out.println("SOCKS 5");
+                    //System.out.println("SOCKS 5");
                     break;
 
                 default:
@@ -49,11 +49,11 @@ public class SocksProxy implements Runnable {
             switch(socks.getCommand()){
                 case CONNECT:
                     socks.connect();
-                    System.out.println("CONNECT");
+                    //System.out.println("CONNECT");
                     break;
 
                 case BIND:
-                    System.out.println("BIND");
+                    //System.out.println("BIND");
                     socks.bind();
                     break;
 
@@ -61,7 +61,7 @@ public class SocksProxy implements Runnable {
                     if(socks instanceof Socks5){
                         ((Socks5) socks).udp();
                     }
-                    System.out.println("UDP");
+                    //System.out.println("UDP");
                     break;
             }
 

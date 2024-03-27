@@ -53,11 +53,13 @@ public class Socks5 extends SocksBase {
                 addr = new byte[atype.getLength()];
                 proxy.getInputStream().read(addr);
                 address = InetAddress.getByAddress(addr);
+                System.out.println(new String(addr));
                 break;
 
             case DOMAIN:
                 addr = new byte[proxy.getInputStream().read()];
                 proxy.getInputStream().read(addr);
+                System.out.println(new String(addr));
                 address = InetAddress.getByName(new String(addr));
                 break;
 
@@ -65,6 +67,7 @@ public class Socks5 extends SocksBase {
                 addr = new byte[atype.getLength()];
                 proxy.getInputStream().read(addr);
                 address = InetAddress.getByAddress(addr);
+                System.out.println(new String(addr));
                 break;
 
             default:
