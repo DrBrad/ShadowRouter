@@ -6,8 +6,10 @@ import unet.shadowrouter.proxy.socks.socks.inter.Command;
 import unet.shadowrouter.proxy.socks.socks.inter.SocksBase;
 
 import java.io.IOException;
+import java.net.Inet4Address;
 import java.net.InetAddress;
 import java.net.InetSocketAddress;
+import java.net.Socket;
 
 public class Socks5 extends SocksBase {
 
@@ -38,8 +40,6 @@ public class Socks5 extends SocksBase {
 
         //RSV
         proxy.getInputStream().read();
-
-        //byte atype = (byte) proxy.getInputStream().read();
 
         AType atype = AType.getATypeFromCode((byte) proxy.getInputStream().read());
         byte[] addr;
@@ -74,32 +74,32 @@ public class Socks5 extends SocksBase {
 
         int port = ((proxy.getInputStream().read() & 0xff) << 8) | (proxy.getInputStream().read() & 0xff);
         this.address = new InetSocketAddress(address, port);
-        System.out.println(address.getHostAddress()+" : "+port);
-
-        /*
-        int[] addressSize = { -1, 4, -1, -1, 16 };
-        int addressLength = addressSize[atype];
-        byteAddress[0] = tunnel.getByte();
-        if(atype == 0x03){
-            addressLength = byteAddress[0]+1;
-        }
-
-        for(int i = 1; i < addressLength; i++){
-            byteAddress[i] = tunnel.getByte();
-        }
-        */
-
 
         return command;
     }
 
     @Override
     public void connect()throws IOException {
+        try{
+            Socket server = new Socket();
+            server.connect(address);
+            replyCommand((byte) 0x00);
 
+            relay(server);
+
+            server.close();
+
+        }catch(IOException e){
+            replyCommand((byte) 0x04);
+        }
     }
 
     @Override
     public void bind()throws IOException {
+
+    }
+
+    public void udp()throws IOException {
 
     }
 
@@ -121,6 +121,7 @@ public class Socks5 extends SocksBase {
             reply = new byte[10];
         }else{
             reply = new byte[6+address.getAddress().getAddress().length];
+            reply[3] = (byte) ((address.getAddress() instanceof Inet4Address) ? 0x01 : 0x03);
             System.arraycopy(address.getAddress().getAddress(), 0, reply, 4, reply.length-6);
             reply[reply.length-2] = (byte)((address.getPort() & 0xFF00) >> 8);
             reply[reply.length-1] = (byte)(address.getPort() & 0x00FF);
@@ -129,7 +130,6 @@ public class Socks5 extends SocksBase {
         reply[0] = 0x05;
         reply[1] = replyCode;
         reply[2] = 0x00;
-        reply[3] = 0x01;
 
         proxy.getOutputStream().write(reply);
     }
