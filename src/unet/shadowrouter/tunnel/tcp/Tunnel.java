@@ -40,7 +40,7 @@ public class Tunnel {
     public void connect(Node node, int port)throws IOException, NoSuchAlgorithmException, InvalidKeyException, SignatureException,
             InvalidKeySpecException, NoSuchPaddingException, InvalidAlgorithmParameterException {
         socket = new Socket();
-        System.out.println(node.getHostAddress()+"  "+node.getPort()+"  "+port);
+        //System.out.println(node.getHostAddress()+"  "+node.getPort()+"  "+port);
         socket.connect(new InetSocketAddress(node.getHostAddress(), port));
         in = socket.getInputStream();
         out = socket.getOutputStream();
@@ -139,7 +139,7 @@ public class Tunnel {
         }
 
         byte[] secret = generateSecret(keyPair.getPrivate(), decodePublic(data, "DH"));
-        System.out.println("CLIENT: "+secret.length+"  "+Base64.getEncoder().encodeToString(secret));
+        //System.out.println("CLIENT: "+secret.length+"  "+Base64.getEncoder().encodeToString(secret));
 
         Cipher cipher = Cipher.getInstance("AES/CTR/NoPadding");
 

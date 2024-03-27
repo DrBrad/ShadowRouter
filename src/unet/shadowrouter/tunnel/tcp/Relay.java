@@ -23,7 +23,6 @@ import java.net.Socket;
 import java.security.*;
 import java.security.spec.InvalidKeySpecException;
 import java.util.Arrays;
-import java.util.Base64;
 
 import static unet.kad4.utils.KeyUtils.*;
 
@@ -61,21 +60,21 @@ public class Relay implements Runnable {
                     addr = new byte[atype.getLength()];
                     in.read(addr);
                     address = AddressUtils.unpackAddress(addr);
-                    System.out.println(address.getAddress().getHostAddress()+" "+address.getPort()+" - IPv4");
+                    //System.out.println(address.getAddress().getHostAddress()+" "+address.getPort()+" - IPv4");
                     break;
 
                 case IPv6:
                     addr = new byte[atype.getLength()];
                     in.read(addr);
                     address = AddressUtils.unpackAddress(addr);
-                    System.out.println(address.getAddress().getHostAddress()+" "+address.getPort()+" - IPv6");
+                    //System.out.println(address.getAddress().getHostAddress()+" "+address.getPort()+" - IPv6");
                     break;
 
                 case DOMAIN:
                     addr = new byte[in.read()];
                     in.read(addr);
                     address = new InetSocketAddress(InetAddress.getByName(new String(addr)), ((in.read() << 8) | in.read() & 0xff));
-                    System.out.println(new String(addr)+" "+address.getPort()+" - DOMAIN");
+                    //System.out.println(new String(addr)+" "+address.getPort()+" - DOMAIN");
                     break;
 
                 default:
@@ -122,7 +121,7 @@ public class Relay implements Runnable {
 
         KeyPair keyPair = generateKeyPair("DH");
         secret = generateSecret(keyPair.getPrivate(), decodePublic(data, "DH"));
-        System.out.println("SERVER: "+secret.length+"  "+Base64.getEncoder().encodeToString(secret));
+        //System.out.println("SERVER: "+secret.length+"  "+Base64.getEncoder().encodeToString(secret));
 
         out.write(SHADOW_ROUTER_HEADER);
 

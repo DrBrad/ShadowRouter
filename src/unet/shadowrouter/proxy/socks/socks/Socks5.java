@@ -117,25 +117,38 @@ public class Socks5 extends SocksBase {
                 public void onResponse(ResponseEvent event){
                     GetPortResponse response = (GetPortResponse) event.getMessage();
 
+                    Tunnel tunnel = new Tunnel();
                     try{
-                        Tunnel tunnel = new Tunnel();
                         tunnel.connect(nodes.get(0), response.getPort()); //ENTRY
                         tunnel.relay(nodes.get(1));
                         tunnel.relay(nodes.get(2));
                         tunnel.exit(address, port, atype);
-                        System.out.println("EXITING AT: "+new String(address)+"  "+port+"  "+atype);
 
                         replyCommand(ReplyCode.GRANTED);
-
-                        relay(tunnel);
-                        proxy.getSocket().close();
 
                     }catch(Exception e){
                         try{
                             replyCommand(ReplyCode.HOST_UNREACHABLE);//, address);
                             proxy.getSocket().close();
-                        }catch(IOException ex){
 
+                        }catch(IOException ex){
+                        }
+                        return;
+                    }
+
+                    try{
+                        System.out.println(
+                                nodes.get(0).getUID()+" > "+
+                                nodes.get(1).getUID()+" > "+
+                                nodes.get(2).getUID()+" > "+
+                                new String(address)+" : "+port);
+                        relay(tunnel);
+
+                    }catch(Exception e){
+                        try{
+                            proxy.getSocket().close();
+
+                        }catch(IOException ex){
                         }
                     }
                 }
