@@ -2,6 +2,7 @@ package unet.shadowrouter.proxy.socks.socks;
 
 import unet.shadowrouter.proxy.socks.SocksProxy;
 import unet.shadowrouter.proxy.socks.socks.inter.AType;
+import unet.shadowrouter.proxy.socks.socks.inter.Command;
 import unet.shadowrouter.proxy.socks.socks.inter.SocksBase;
 
 import java.io.IOException;
@@ -17,7 +18,7 @@ public class Socks5 extends SocksBase {
     }
 
     @Override
-    public byte getCommand()throws IOException {
+    public Command getCommand()throws IOException {
         if(!authenticate()){
             //SEND ERROR CODE...
             throw new IOException("Failed to authenticate.");
@@ -29,7 +30,11 @@ public class Socks5 extends SocksBase {
             replyCommand((byte) 0xff);
             throw new IOException("Invalid Socks version");
         }
-        byte command = (byte) proxy.getInputStream().read();
+        Command command = Command.getCommandFromCode((byte) proxy.getInputStream().read());
+
+        if(command.equals(Command.INVALID)){
+            replyCommand((byte) 0x07);
+        }
 
         //RSV
         proxy.getInputStream().read();
@@ -71,9 +76,6 @@ public class Socks5 extends SocksBase {
         this.address = new InetSocketAddress(address, port);
         System.out.println(address.getHostAddress()+" : "+port);
 
-        if(command < 0x01 || command > 0x03){
-            replyCommand((byte)0x07);
-        }
         /*
         int[] addressSize = { -1, 4, -1, -1, 16 };
         int addressLength = addressSize[atype];

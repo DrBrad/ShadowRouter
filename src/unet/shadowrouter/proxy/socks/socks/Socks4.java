@@ -1,6 +1,7 @@
 package unet.shadowrouter.proxy.socks.socks;
 
 import unet.shadowrouter.proxy.socks.SocksProxy;
+import unet.shadowrouter.proxy.socks.socks.inter.Command;
 import unet.shadowrouter.proxy.socks.socks.inter.SocksBase;
 
 import java.io.IOException;
@@ -12,8 +13,8 @@ public class Socks4 extends SocksBase {
     }
 
     @Override
-    public byte getCommand()throws IOException {
-        return 0;
+    public Command getCommand()throws IOException {
+        return Command.INVALID;
     }
 
     @Override

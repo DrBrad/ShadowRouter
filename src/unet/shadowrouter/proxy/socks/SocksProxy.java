@@ -46,19 +46,19 @@ public class SocksProxy implements Runnable {
 
             //COMMAND
             switch(socks.getCommand()){
-                case 0x01:
+                case CONNECT:
                     System.out.println("CONNECT");
                     //commons.connect();
                     //relay();
                     break;
 
-                case 0x02:
+                case BIND:
                     System.out.println("BIND");
                     //commons.bind();
                     //relay();
                     break;
 
-                case 0x03:
+                case UDP:
                     System.out.println("UDP");
                     //((Socks5)commons).udp();
                     break;

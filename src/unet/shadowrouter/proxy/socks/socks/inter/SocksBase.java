@@ -12,7 +12,7 @@ public abstract class SocksBase {
         this.proxy = proxy;
     }
 
-    public abstract byte getCommand()throws IOException;
+    public abstract Command getCommand()throws IOException;
 
     public abstract void connect()throws IOException;
 
