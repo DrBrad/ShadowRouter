@@ -67,6 +67,10 @@ public abstract class SocksBase {
         }catch(InterruptedException e){
             e.printStackTrace();
         }
+
+        tunnel.close();
+        proxy.getSocket().close();
+
         //while(!relay.isClosed() && !socket.isClosed()){
         //    relay.getInputStream().transferTo(out);
         //}
@@ -84,7 +88,6 @@ public abstract class SocksBase {
         int len;
         while((len = in.read(buf)) != -1){
             out.write(buf, 0, len);
-            out.flush();
         }
 
         //in.close();
