@@ -71,7 +71,12 @@ public class SocksProxy implements Runnable {
             //socket.close();
 
         }catch(IOException e){
-            e.printStackTrace();
+            //e.printStackTrace();
+            try{
+                socket.close();
+            }catch(IOException ex){
+
+            }
         }
     }
 
