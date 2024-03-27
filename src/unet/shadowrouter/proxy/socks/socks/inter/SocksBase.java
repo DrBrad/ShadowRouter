@@ -1,4 +1,4 @@
-package unet.shadowrouter.proxy.socks.socks;
+package unet.shadowrouter.proxy.socks.socks.inter;
 
 import unet.shadowrouter.proxy.socks.SocksProxy;
 

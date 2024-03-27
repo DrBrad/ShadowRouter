@@ -1,10 +1,16 @@
 package unet.shadowrouter.proxy.socks.socks;
 
 import unet.shadowrouter.proxy.socks.SocksProxy;
+import unet.shadowrouter.proxy.socks.socks.inter.AType;
+import unet.shadowrouter.proxy.socks.socks.inter.SocksBase;
 
 import java.io.IOException;
+import java.net.InetAddress;
+import java.net.InetSocketAddress;
 
 public class Socks5 extends SocksBase {
+
+    private InetSocketAddress address;
 
     public Socks5(SocksProxy proxy){
         super(proxy);
@@ -19,7 +25,10 @@ public class Socks5 extends SocksBase {
 
         proxy.getOutputStream().write(new byte[]{ 0x05, 0x00 });
 
-        byte version = (byte) proxy.getInputStream().read();
+        if(proxy.getInputStream().read() != 0x05){
+            replyCommand((byte) 0xff);
+            throw new IOException("Invalid Socks version");
+        }
         byte command = (byte) proxy.getInputStream().read();
 
         //RSV
@@ -27,35 +36,44 @@ public class Socks5 extends SocksBase {
 
         //byte atype = (byte) proxy.getInputStream().read();
 
-        switch(proxy.getInputStream().read()){ //A-Type ( IPv4, DOMAIN, IPv6 )
-            case 0x01: {//IPv4
-                    byte[] addr = new byte[4];
+        AType atype = AType.getATypeFromCode((byte) proxy.getInputStream().read());
+        byte[] addr;
+        InetAddress address;
+
+        switch(atype){ //A-Type ( IPv4, DOMAIN, IPv6 )
+            case IPv4: {//IPv4
+                    addr = new byte[atype.getLength()];
                     proxy.getInputStream().read(addr);
-                    System.out.println("IPv4 "+new String(addr));
+                    address = InetAddress.getByAddress(addr);
                 }
                 break;
 
-            case 0x03: {//DOMAIN
-                    byte[] addr = new byte[proxy.getInputStream().read()];
+            case DOMAIN: {//DOMAIN
+                    addr = new byte[proxy.getInputStream().read()];
                     proxy.getInputStream().read(addr);
-                    System.out.println("DOMAIN "+new String(addr));
+                    address = InetAddress.getByName(new String(addr));
                 }
                 break;
 
-            case 0x04: {//IPv6
-                    byte[] addr = new byte[16];
+            case IPv6: {//IPv6
+                    addr = new byte[atype.getLength()];
                     proxy.getInputStream().read(addr);
-                    System.out.println("IPv6 "+new String(addr));
+                    address = InetAddress.getByAddress(addr);
                 }
                 break;
 
             default:
+                replyCommand((byte) 0x08);
                 throw new IOException("Invalid A-Type.");
         }
 
         int port = ((proxy.getInputStream().read() & 0xff) << 8) | (proxy.getInputStream().read() & 0xff);
-        System.out.println(port+"  PORT");
+        this.address = new InetSocketAddress(address, port);
+        System.out.println(address.getHostAddress()+" : "+port);
 
+        if(command < 0x01 || command > 0x03){
+            replyCommand((byte)0x07);
+        }
         /*
         int[] addressSize = { -1, 4, -1, -1, 16 };
         int addressLength = addressSize[atype];
@@ -92,5 +110,25 @@ public class Socks5 extends SocksBase {
         }
 
         return (methods.indexOf("-0-") != -1 || methods.indexOf("-00-") != -1);
+    }
+
+    private void replyCommand(byte replyCode)throws IOException {
+        byte[] reply;
+
+        if(address == null){
+            reply = new byte[10];
+        }else{
+            reply = new byte[6+address.getAddress().getAddress().length];
+            System.arraycopy(address.getAddress().getAddress(), 0, reply, 4, reply.length-6);
+            reply[reply.length-2] = (byte)((address.getPort() & 0xFF00) >> 8);
+            reply[reply.length-1] = (byte)(address.getPort() & 0x00FF);
+        }
+
+        reply[0] = 0x05;
+        reply[1] = replyCode;
+        reply[2] = 0x00;
+        reply[3] = 0x01;
+
+        proxy.getOutputStream().write(reply);
     }
 }

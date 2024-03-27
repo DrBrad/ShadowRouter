@@ -1,6 +1,7 @@
 package unet.shadowrouter.proxy.socks.socks;
 
 import unet.shadowrouter.proxy.socks.SocksProxy;
+import unet.shadowrouter.proxy.socks.socks.inter.SocksBase;
 
 import java.io.IOException;
 

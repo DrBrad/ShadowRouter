@@ -2,7 +2,7 @@ package unet.shadowrouter.proxy.socks;
 
 import unet.shadowrouter.proxy.socks.socks.Socks4;
 import unet.shadowrouter.proxy.socks.socks.Socks5;
-import unet.shadowrouter.proxy.socks.socks.SocksBase;
+import unet.shadowrouter.proxy.socks.socks.inter.SocksBase;
 
 import java.io.IOException;
 import java.io.InputStream;
