@@ -70,7 +70,7 @@ public abstract class SocksBase {
     }
 
     private void transfer(InputStream in, OutputStream out)throws IOException {
-        byte[] buf = new byte[4096];
+        byte[] buf = new byte[8192];
         int len;
         while((len = in.read(buf)) != -1){
             out.write(buf, 0, len);
