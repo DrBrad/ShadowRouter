@@ -8,6 +8,8 @@ import unet.kad4.rpc.events.ResponseEvent;
 import unet.kad4.rpc.events.StalledEvent;
 import unet.kad4.rpc.events.inter.ResponseCallback;
 import unet.kad4.utils.net.AddressUtils;
+import unet.shadowrouter.tunnel.inter.AddressType;
+import unet.shadowrouter.tunnel.inter.Command;
 
 import javax.crypto.*;
 import javax.crypto.spec.IvParameterSpec;
@@ -15,6 +17,7 @@ import javax.crypto.spec.SecretKeySpec;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.net.InetAddress;
 import java.net.InetSocketAddress;
 import java.net.Socket;
 import java.security.*;
@@ -48,17 +51,42 @@ public class Relay implements Runnable {
 
             handshake();
 
-            byte type = (byte) in.read();
-            byte[] addr = new byte[in.read()];
-            in.read(addr);
+            Command command = Command.getCommandFromCode((byte) in.read());
+            AddressType atype = AddressType.getAddressTypeFromCode((byte) in.read());
+            byte[] addr;
+            InetSocketAddress address;
 
-            switch(type){
-                case 0x00:
-                    resolve(AddressUtils.unpackAddress(addr));
+            switch(atype){
+                case IPv4:
+                    addr = new byte[6];
+                    in.read(addr);
+                    address = AddressUtils.unpackAddress(addr);
                     break;
 
-                case 0x01:
-                    relay(AddressUtils.unpackAddress(addr));
+                case IPv6:
+                    addr = new byte[18];
+                    in.read(addr);
+                    address = AddressUtils.unpackAddress(addr);
+                    break;
+
+                case DOMAIN:
+                    addr = new byte[in.read()];
+                    in.read(addr);
+                    address = new InetSocketAddress(InetAddress.getByName(new String(addr)), ((in.read() << 8) | in.read() & 0xff));
+                    break;
+
+                default:
+                    socket.close();
+                    return;
+            }
+
+            switch(command){
+                case RESOLVE_PORT:
+                    resolve(address);
+                    break;
+
+                case RELAY:
+                    relay(address);
                     break;
             }
 

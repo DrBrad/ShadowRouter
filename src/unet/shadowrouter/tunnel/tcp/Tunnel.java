@@ -2,6 +2,8 @@ package unet.shadowrouter.tunnel.tcp;
 
 import unet.kad4.utils.Node;
 import unet.kad4.utils.net.AddressUtils;
+import unet.shadowrouter.tunnel.inter.AddressType;
+import unet.shadowrouter.tunnel.inter.Command;
 
 import javax.crypto.*;
 import javax.crypto.spec.IvParameterSpec;
@@ -9,6 +11,7 @@ import javax.crypto.spec.SecretKeySpec;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.net.Inet4Address;
 import java.net.InetSocketAddress;
 import java.net.Socket;
 import java.security.*;
@@ -58,19 +61,33 @@ public class Tunnel {
     public void relay(Node node)throws IOException, NoSuchAlgorithmException, InvalidKeyException, SignatureException,
             InvalidKeySpecException, NoSuchPaddingException, InvalidAlgorithmParameterException {
         byte[] addr = AddressUtils.packAddress(node.getAddress());
-        out.write(0x00);
-        out.write((byte) addr.length);
+        out.write(Command.RESOLVE_PORT.getCode());
+        out.write((node.getHostAddress() instanceof Inet4Address) ? AddressType.IPv4.getCode() : AddressType.IPv6.getCode());
         out.write(addr);
         out.flush();
 
         handshake(node);
     }
 
-    public void exit(InetSocketAddress address)throws IOException {
-        byte[] addr = AddressUtils.packAddress(address);
-        out.write(0x01);
-        out.write((byte) addr.length);
-        out.write(addr);
+    public void exit(byte[] address, int port, AddressType type)throws IOException {
+        out.write(Command.RELAY.getCode());
+        out.write(type.getCode());
+
+        switch(type){
+            case IPv4:
+            case IPv6:
+                out.write(address);
+                break;
+
+            case DOMAIN:
+                out.write((byte) address.length);
+                out.write(address);
+                break;
+        }
+
+        out.write((port & 0xff00) >> 8);
+        out.write(port & 0xff);
+
         out.flush();
     }
 
