@@ -19,10 +19,6 @@ public class CipherOutputStream extends FilterOutputStream {
         this.cipher = cipher;
     }
 
-    public void flush()throws IOException {
-        out.flush();
-    }
-
     public void write(int value)throws IOException {
         write(new byte[]{ (byte) value }, 0, 1);
     }
@@ -34,6 +30,10 @@ public class CipherOutputStream extends FilterOutputStream {
     public void write(byte[] buf, int off, int len)throws IOException {
         //System.out.println(buf.length+"  "+off+"  "+len);
         out.write(cipher.update(buf, off, len));
+    }
+
+    public void flush()throws IOException {
+        out.flush();
     }
 
     /*
