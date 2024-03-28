@@ -38,6 +38,7 @@ public class CipherInputStream extends FilterInputStream {
                 length = cipher.update(buf, 0, length, buf, 0);
             }
             return length;
+
         }catch(ShortBufferException e){
             return 0;
         }

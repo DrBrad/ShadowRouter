@@ -35,19 +35,4 @@ public class CipherOutputStream extends FilterOutputStream {
     public void flush()throws IOException {
         out.flush();
     }
-
-    /*
-    public void close()throws IOException {
-        try{
-            byte[] buf = cipher.doFinal();
-            if(buf.length > 0){
-                out.write(buf);
-                out.flush();
-            }
-        }catch(IllegalBlockSizeException | BadPaddingException e){
-            e.printStackTrace();
-        }
-        out.close();
-    }
-    */
 }
