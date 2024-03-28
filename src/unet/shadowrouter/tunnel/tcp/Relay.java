@@ -146,10 +146,10 @@ public class Relay implements Runnable {
         SecretKey secretKey = new SecretKeySpec(digest.digest(secret), "AES");
 
         cipher.init(Cipher.DECRYPT_MODE, secretKey, new IvParameterSpec(iv));//new GCMParameterSpec(128, iv));
-        in = new SecureInputStream(in, cipher);
+        //in = new SecureInputStream(in, cipher);
 
         cipher.init(Cipher.ENCRYPT_MODE, secretKey, new IvParameterSpec(iv));//, new GCMParameterSpec(128, iv));
-        out = new SecureOutputStream(out, cipher);
+        //out = new SecureOutputStream(out, cipher);
     }
 
     public void resolve(InetSocketAddress address)throws IOException {
