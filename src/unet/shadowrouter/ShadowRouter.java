@@ -1,14 +1,17 @@
 package unet.shadowrouter;
 
 import unet.kad4.kad.KademliaBase;
-import unet.kad4.messages.*;
-import unet.kad4.refresh.tasks.BucketRefreshTask;
-import unet.kad4.refresh.tasks.StaleRefreshTask;
+import unet.kad4.kad.Server;
+import unet.kad4.refresh.RefreshHandler;
 import unet.kad4.routing.BucketTypes;
 import unet.kad4.routing.inter.RoutingTable;
-import unet.kad4.rpc.JoinNodeListener;
 import unet.kad4.rpc.KRequestListener;
+import unet.shadowrouter.kad.JoinNodeListener;
 import unet.shadowrouter.kad.SRequestListener;
+import unet.shadowrouter.kad.ShadowServer;
+import unet.shadowrouter.kad.messages.*;
+import unet.shadowrouter.kad.refresh.BucketRefreshTask;
+import unet.shadowrouter.kad.refresh.StaleRefreshTask;
 import unet.shadowrouter.tunnel.tcp.RelayServer;
 
 import java.io.IOException;
@@ -28,7 +31,13 @@ public class ShadowRouter extends KademliaBase {
     }
 
     public ShadowRouter(RoutingTable routingTable){
-        super(routingTable);
+        //super(routingTable);
+
+        this.routingTable = routingTable;
+        System.out.println("Starting with bucket type: "+routingTable.getClass().getSimpleName());
+        server = new ShadowServer(this);
+        refresh = new RefreshHandler(this);
+
 
         routingTable.setSecureOnly(false);
         //refresh.setRefreshTime(30000);
@@ -45,6 +54,8 @@ public class ShadowRouter extends KademliaBase {
         });
 
         try{
+            //server.registerRequestListener(new KRequestListener());
+            /*
             registerRequestListener(new KRequestListener());
 
             registerMessage(PingRequest.class);
@@ -53,6 +64,13 @@ public class ShadowRouter extends KademliaBase {
             registerMessage(FindNodeResponse.class);
             registerMessage(GetPortRequest.class);
             registerMessage(GetPortResponse.class);
+            */
+            server.registerMessage(PingRequest.class);
+            server.registerMessage(PingResponse.class);
+            server.registerMessage(FindNodeRequest.class);
+            server.registerMessage(FindNodeResponse.class);
+            server.registerMessage(GetPortRequest.class);
+            server.registerMessage(GetPortResponse.class);
 
             refresh.addOperation(bucketRefreshTask);
             refresh.addOperation(new StaleRefreshTask());
@@ -65,7 +83,7 @@ public class ShadowRouter extends KademliaBase {
     public void startRelay(int port)throws IOException {
         relay.start(port);
         try{
-            registerRequestListener(new SRequestListener(port));
+            server.registerRequestListener(new SRequestListener(port));
         }catch(NoSuchFieldException | IllegalAccessException | InvocationTargetException e){
             e.printStackTrace();
         }
@@ -74,6 +92,8 @@ public class ShadowRouter extends KademliaBase {
     @Override
     public void join(int localPort, InetSocketAddress address)throws IOException {
         super.join(localPort, address);
+
+        System.err.println(server.getClass().getSimpleName());
 
         FindNodeRequest request = new FindNodeRequest();
         request.setDestination(address);

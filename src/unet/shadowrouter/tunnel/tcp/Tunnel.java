@@ -1,7 +1,8 @@
 package unet.shadowrouter.tunnel.tcp;
 
-import unet.kad4.utils.Node;
 import unet.kad4.utils.net.AddressUtils;
+import unet.shadowrouter.kad.utils.KeyUtils;
+import unet.shadowrouter.kad.utils.SecureNode;
 import unet.shadowrouter.tunnel.inter.AddressType;
 import unet.shadowrouter.tunnel.inter.Command;
 
@@ -18,8 +19,6 @@ import java.security.*;
 import java.security.spec.InvalidKeySpecException;
 import java.util.Arrays;
 
-import static unet.kad4.utils.KeyUtils.*;
-
 public class Tunnel {
 
     public static final byte[] SHADOW_ROUTER_HEADER = new byte[]{ 'S', 'R' };
@@ -31,12 +30,12 @@ public class Tunnel {
     public Tunnel(){
     }
 
-    public Tunnel(Node node, int port)throws IOException, NoSuchAlgorithmException, InvalidKeyException, SignatureException,
+    public Tunnel(SecureNode node, int port)throws IOException, NoSuchAlgorithmException, InvalidKeyException, SignatureException,
             InvalidKeySpecException, NoSuchPaddingException, InvalidAlgorithmParameterException {
         connect(node, port);
     }
 
-    public void connect(Node node, int port)throws IOException, NoSuchAlgorithmException, InvalidKeyException, SignatureException,
+    public void connect(SecureNode node, int port)throws IOException, NoSuchAlgorithmException, InvalidKeyException, SignatureException,
             InvalidKeySpecException, NoSuchPaddingException, InvalidAlgorithmParameterException {
         socket = new Socket();
         //System.out.println(node.getHostAddress()+"  "+node.getPort()+"  "+port);
@@ -57,7 +56,7 @@ public class Tunnel {
     | 2 BYTE CONSTANT | 4 BYTE DH PUBLIC_KEY LENGTH | DH PUBLIC_KEY | SIGNATURE |
     +-----------------+-----------------------------+---------------+-----------+
     */
-    public void relay(Node node)throws IOException, NoSuchAlgorithmException, InvalidKeyException, SignatureException,
+    public void relay(SecureNode node)throws IOException, NoSuchAlgorithmException, InvalidKeyException, SignatureException,
             InvalidKeySpecException, NoSuchPaddingException, InvalidAlgorithmParameterException {
         out.write(Command.RESOLVE_PORT.getCode());
         out.write((node.getHostAddress() instanceof Inet4Address) ? AddressType.IPv4.getCode() : AddressType.IPv6.getCode());
@@ -100,9 +99,9 @@ public class Tunnel {
         }
     }
 
-    private void handshake(Node node)throws IOException, NoSuchAlgorithmException, InvalidKeyException, SignatureException,
+    private void handshake(SecureNode node)throws IOException, NoSuchAlgorithmException, InvalidKeyException, SignatureException,
             InvalidKeySpecException, NoSuchPaddingException, InvalidAlgorithmParameterException {
-        KeyPair keyPair = generateKeyPair("DH");
+        KeyPair keyPair = KeyUtils.generateKeyPair("DH");
         SecureRandom random = new SecureRandom();
 
         out.write(SHADOW_ROUTER_HEADER);
@@ -141,11 +140,11 @@ public class Tunnel {
         byte[] signature = new byte[256];
         in.read(signature);
 
-        if(!verify(node.getPublicKey(), signature, data)){
+        if(!KeyUtils.verify(node.getPublicKey(), signature, data)){
             throw new IOException("Signature is Invalid.");
         }
 
-        byte[] secret = generateSecret(keyPair.getPrivate(), decodePublic(data, "DH"));
+        byte[] secret = KeyUtils.generateSecret(keyPair.getPrivate(), KeyUtils.decodePublic(data, "DH"));
         //System.out.println("CLIENT: "+secret.length+"  "+Base64.getEncoder().encodeToString(secret));
 
 

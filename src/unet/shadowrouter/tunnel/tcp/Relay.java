@@ -1,13 +1,15 @@
 package unet.shadowrouter.tunnel.tcp;
 
 import unet.kad4.kad.KademliaBase;
-import unet.kad4.messages.GetPortRequest;
-import unet.kad4.messages.GetPortResponse;
 import unet.kad4.rpc.events.ErrorResponseEvent;
 import unet.kad4.rpc.events.ResponseEvent;
 import unet.kad4.rpc.events.StalledEvent;
 import unet.kad4.rpc.events.inter.ResponseCallback;
 import unet.kad4.utils.net.AddressUtils;
+import unet.shadowrouter.kad.ShadowServer;
+import unet.shadowrouter.kad.messages.GetPortRequest;
+import unet.shadowrouter.kad.messages.GetPortResponse;
+import unet.shadowrouter.kad.utils.KeyUtils;
 import unet.shadowrouter.tunnel.inter.AddressType;
 import unet.shadowrouter.tunnel.inter.Command;
 
@@ -23,8 +25,6 @@ import java.net.Socket;
 import java.security.*;
 import java.security.spec.InvalidKeySpecException;
 import java.util.Arrays;
-
-import static unet.kad4.utils.KeyUtils.*;
 
 public class Relay implements Runnable {
 
@@ -119,8 +119,8 @@ public class Relay implements Runnable {
         in.read(iv);
 
 
-        KeyPair keyPair = generateKeyPair("DH");
-        secret = generateSecret(keyPair.getPrivate(), decodePublic(data, "DH"));
+        KeyPair keyPair = KeyUtils.generateKeyPair("DH");
+        secret = KeyUtils.generateSecret(keyPair.getPrivate(), KeyUtils.decodePublic(data, "DH"));
         //System.out.println("SERVER: "+secret.length+"  "+Base64.getEncoder().encodeToString(secret));
 
         out.write(SHADOW_ROUTER_HEADER);
@@ -137,7 +137,7 @@ public class Relay implements Runnable {
         out.write(ecdhKey);
         //byte[] sign = sign(myKey, ecdhKey);
         //out.write(sign);
-        out.write(sign(kademlia.getServer().getKeyPair().getPrivate(), ecdhKey));
+        out.write(KeyUtils.sign(((ShadowServer) kademlia.getServer()).getKeyPair().getPrivate(), ecdhKey));
         out.flush();
 
         MessageDigest digest = MessageDigest.getInstance("SHA-256");// Or use a proper KDF like HKDF

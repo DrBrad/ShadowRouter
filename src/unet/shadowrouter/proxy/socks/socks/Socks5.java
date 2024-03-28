@@ -1,12 +1,13 @@
 package unet.shadowrouter.proxy.socks.socks;
 
-import unet.kad4.messages.GetPortRequest;
-import unet.kad4.messages.GetPortResponse;
 import unet.kad4.rpc.events.ErrorResponseEvent;
 import unet.kad4.rpc.events.ResponseEvent;
 import unet.kad4.rpc.events.StalledEvent;
 import unet.kad4.rpc.events.inter.ResponseCallback;
 import unet.kad4.utils.Node;
+import unet.shadowrouter.kad.messages.GetPortRequest;
+import unet.shadowrouter.kad.messages.GetPortResponse;
+import unet.shadowrouter.kad.utils.SecureNode;
 import unet.shadowrouter.proxy.socks.SocksProxy;
 import unet.shadowrouter.proxy.socks.socks.inter.AType;
 import unet.shadowrouter.proxy.socks.socks.inter.Command;
@@ -137,9 +138,9 @@ public class Socks5 extends SocksBase {
 
                     Tunnel tunnel = new Tunnel();
                     try{
-                        tunnel.connect(nodes.get(0), response.getPort()); //ENTRY
-                        tunnel.relay(nodes.get(1));
-                        tunnel.relay(nodes.get(2));
+                        tunnel.connect((SecureNode) nodes.get(0), response.getPort()); //ENTRY
+                        tunnel.relay((SecureNode) nodes.get(1));
+                        tunnel.relay((SecureNode) nodes.get(2));
                         tunnel.exit(address, port, atype);
 
                         replyCommand(ReplyCode.GRANTED);

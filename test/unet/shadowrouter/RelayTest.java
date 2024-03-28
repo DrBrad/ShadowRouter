@@ -2,17 +2,7 @@ package unet.shadowrouter;
 
 import unet.kad4.Kademlia;
 import unet.kad4.kad.KademliaBase;
-import unet.kad4.messages.GetPortRequest;
-import unet.kad4.messages.GetPortResponse;
-import unet.kad4.rpc.events.ResponseEvent;
-import unet.kad4.rpc.events.inter.ResponseCallback;
-import unet.kad4.utils.Node;
-import unet.shadowrouter.kad.SRequestListener;
 import unet.shadowrouter.proxy.socks.SocksProxyServer;
-import unet.shadowrouter.server.TestServer;
-import unet.shadowrouter.tunnel.tcp.RelayServer;
-import unet.shadowrouter.tunnel.tcp.Tunnel;
-import unet.kad4.utils.KeyUtils;
 
 import javax.net.ssl.KeyManagerFactory;
 import javax.net.ssl.SSLContext;
