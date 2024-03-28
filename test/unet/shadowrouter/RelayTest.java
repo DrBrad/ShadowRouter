@@ -14,6 +14,10 @@ import unet.shadowrouter.tunnel.tcp.RelayServer;
 import unet.shadowrouter.tunnel.tcp.Tunnel;
 import unet.kad4.utils.KeyUtils;
 
+import javax.net.ssl.KeyManagerFactory;
+import javax.net.ssl.SSLContext;
+import javax.net.ssl.SSLSocket;
+import javax.net.ssl.SSLSocketFactory;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
@@ -68,7 +72,8 @@ public class RelayTest {
             i++;
         }
 
-
+        //SSLSocketInputStream in;
+        //javax.net.ssl.SSLSocketOutputStream
 
         //ARE WE CHECKING IPS BEFORE INSTERTING - DONT WANT DUPLICATE IPS...
 

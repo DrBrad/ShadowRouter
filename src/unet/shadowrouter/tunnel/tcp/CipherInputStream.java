@@ -41,6 +41,7 @@ public class CipherInputStream extends FilterInputStream {
                 length = encrypted.length;
             }
             return length;
+
         }catch(Exception e){
         //}catch(ShortBufferException e){
             //return 0;
