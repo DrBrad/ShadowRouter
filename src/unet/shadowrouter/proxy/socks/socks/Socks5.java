@@ -157,8 +157,8 @@ public class Socks5 extends SocksBase {
                     try{
                         System.out.println(
                                 nodes.get(0).getUID()+" > "+
-                                //nodes.get(1).getUID()+" > "+
-                                //nodes.get(2).getUID()+" > "+
+                                nodes.get(1).getUID()+" > "+
+                                nodes.get(2).getUID()+" > "+
                                 new String(address)+" : "+port);
                         relay(tunnel);
 
