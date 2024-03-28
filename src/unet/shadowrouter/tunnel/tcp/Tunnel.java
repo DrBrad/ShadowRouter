@@ -17,7 +17,6 @@ import java.net.Socket;
 import java.security.*;
 import java.security.spec.InvalidKeySpecException;
 import java.util.Arrays;
-import java.util.Base64;
 
 import static unet.kad4.utils.KeyUtils.*;
 
@@ -149,16 +148,17 @@ public class Tunnel {
         byte[] secret = generateSecret(keyPair.getPrivate(), decodePublic(data, "DH"));
         //System.out.println("CLIENT: "+secret.length+"  "+Base64.getEncoder().encodeToString(secret));
 
-        Cipher cipher = Cipher.getInstance("AES/CTR/NoPadding");
 
         MessageDigest digest = MessageDigest.getInstance("SHA-256");// Or use a proper KDF like HKDF
         SecretKey secretKey = new SecretKeySpec(digest.digest(secret), "AES");
 
+        Cipher cipher = Cipher.getInstance("AES/CTR/NoPadding");
         cipher.init(Cipher.DECRYPT_MODE, secretKey, new IvParameterSpec(iv));//, new GCMParameterSpec(128, iv));
-        //in = new SecureInputStream(in, cipher);
+        in = new SecureInputStream(in, cipher);
 
+        cipher = Cipher.getInstance("AES/CTR/NoPadding");
         cipher.init(Cipher.ENCRYPT_MODE, secretKey, new IvParameterSpec(iv));//, new GCMParameterSpec(128, iv));
-        //out = new SecureOutputStream(out, cipher);
+        out = new SecureOutputStream(out, cipher);
     }
 
     public InputStream getInputStream(){

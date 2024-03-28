@@ -41,6 +41,7 @@ public class SecureInputStream extends InputStream {
             }
             return length;
         }catch(ShortBufferException e){
+            e.printStackTrace();
             return 0;
         }
     }

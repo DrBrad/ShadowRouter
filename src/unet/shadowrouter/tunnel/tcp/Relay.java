@@ -140,16 +140,16 @@ public class Relay implements Runnable {
         out.write(sign(kademlia.getServer().getKeyPair().getPrivate(), ecdhKey));
         out.flush();
 
-        Cipher cipher = Cipher.getInstance("AES/CTR/NoPadding");
-
         MessageDigest digest = MessageDigest.getInstance("SHA-256");// Or use a proper KDF like HKDF
         SecretKey secretKey = new SecretKeySpec(digest.digest(secret), "AES");
 
+        Cipher cipher = Cipher.getInstance("AES/CTR/NoPadding");
         cipher.init(Cipher.DECRYPT_MODE, secretKey, new IvParameterSpec(iv));//new GCMParameterSpec(128, iv));
-        //in = new SecureInputStream(in, cipher);
+        in = new SecureInputStream(in, cipher);
 
+        cipher = Cipher.getInstance("AES/CTR/NoPadding");
         cipher.init(Cipher.ENCRYPT_MODE, secretKey, new IvParameterSpec(iv));//, new GCMParameterSpec(128, iv));
-        //out = new SecureOutputStream(out, cipher);
+        out = new SecureOutputStream(out, cipher);
     }
 
     public void resolve(InetSocketAddress address)throws IOException {
