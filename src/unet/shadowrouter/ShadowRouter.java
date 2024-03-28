@@ -31,7 +31,7 @@ public class ShadowRouter extends KademliaBase {
         super(routingTable);
 
         routingTable.setSecureOnly(false);
-        refresh.setRefreshTime(30000);
+        //refresh.setRefreshTime(30000);
 
         relay = new RelayServer(this);
 
