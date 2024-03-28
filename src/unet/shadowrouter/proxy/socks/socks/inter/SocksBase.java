@@ -68,7 +68,12 @@ public abstract class SocksBase {
             e.printStackTrace();
         }
 
+        tunnel.getInputStream().close();
+        tunnel.getOutputStream().close();
         tunnel.close();
+
+        proxy.getInputStream().close();
+        proxy.getOutputStream().close();
         proxy.getSocket().close();
 
         //while(!relay.isClosed() && !socket.isClosed()){

@@ -138,8 +138,8 @@ public class Socks5 extends SocksBase {
                     Tunnel tunnel = new Tunnel();
                     try{
                         tunnel.connect(nodes.get(0), response.getPort()); //ENTRY
-                        tunnel.relay(nodes.get(1));
-                        tunnel.relay(nodes.get(2));
+                        //tunnel.relay(nodes.get(1));
+                        //tunnel.relay(nodes.get(2));
                         tunnel.exit(address, port, atype);
 
                         replyCommand(ReplyCode.GRANTED);
@@ -157,17 +157,12 @@ public class Socks5 extends SocksBase {
                     try{
                         System.out.println(
                                 nodes.get(0).getUID()+" > "+
-                                nodes.get(1).getUID()+" > "+
-                                nodes.get(2).getUID()+" > "+
+                                //nodes.get(1).getUID()+" > "+
+                                //nodes.get(2).getUID()+" > "+
                                 new String(address)+" : "+port);
                         relay(tunnel);
 
                     }catch(Exception e){
-                        try{
-                            proxy.getSocket().close();
-
-                        }catch(IOException ex){
-                        }
                     }
                 }
 

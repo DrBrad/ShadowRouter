@@ -56,7 +56,7 @@ public class SocksProxy implements Runnable {
                     break;
 
                 case BIND:
-                    //System.out.println("BIND");
+                    System.out.println("BIND");
                     socks.bind();
                     break;
 
@@ -64,7 +64,7 @@ public class SocksProxy implements Runnable {
                     if(socks instanceof Socks5){
                         ((Socks5) socks).udp();
                     }
-                    //System.out.println("UDP");
+                    System.out.println("UDP");
                     break;
             }
 
