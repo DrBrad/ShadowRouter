@@ -32,6 +32,7 @@ public class SecureOutputStream extends OutputStream {
     @Override
     public void write(byte[] buf, int off, int len)throws IOException {
         //System.out.println(buf.length+"  "+off+"  "+len);
+        System.out.println(cipher.getBlockSize());
         out.write(cipher.update(buf, off, len));
     }
 
