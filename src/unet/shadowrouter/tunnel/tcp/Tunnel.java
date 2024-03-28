@@ -151,9 +151,8 @@ public class Tunnel {
 
         Cipher cipher = Cipher.getInstance("AES/CTR/NoPadding");
 
-        MessageDigest digest = MessageDigest.getInstance("SHA-256");
-        byte[] derivedKey = digest.digest(secret); // Or use a proper KDF like HKDF
-        SecretKey secretKey = new SecretKeySpec(derivedKey, "AES");
+        MessageDigest digest = MessageDigest.getInstance("SHA-256");// Or use a proper KDF like HKDF
+        SecretKey secretKey = new SecretKeySpec(digest.digest(secret), "AES");
 
         cipher.init(Cipher.DECRYPT_MODE, secretKey, new IvParameterSpec(iv));//, new GCMParameterSpec(128, iv));
         in = new SecureInputStream(in, cipher);
