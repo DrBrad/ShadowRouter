@@ -35,17 +35,11 @@ public class CipherInputStream extends FilterInputStream {
         try{
             int length = in.read(buf, off, len);
             if(length > 0){
-                //length = cipher.update(buf, off, length, buf, off);
-                byte[] encrypted = cipher.update(buf, off, length);
-                System.arraycopy(encrypted, 0, buf, off, encrypted.length); // Copy encrypted data back to input buffer
-                length = encrypted.length;
+                length = cipher.update(buf, 0, length, buf, 0);
             }
             return length;
-
-        }catch(Exception e){
-        //}catch(ShortBufferException e){
-            //return 0;
-            throw new IOException("Error reading from input stream", e);
+        }catch(ShortBufferException e){
+            return 0;
         }
     }
 

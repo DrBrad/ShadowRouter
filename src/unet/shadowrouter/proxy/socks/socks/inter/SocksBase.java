@@ -87,10 +87,8 @@ public abstract class SocksBase {
         byte[] buf = new byte[4096];
         int len;
         while((len = in.read(buf)) != -1){
-            if(len > 0){
-                out.write(buf, 0, len);
-                out.flush();
-            }
+            out.write(buf, 0, len);
+            out.flush();
         }
 
         //out.flush();

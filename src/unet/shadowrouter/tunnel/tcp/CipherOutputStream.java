@@ -29,18 +29,25 @@ public class CipherOutputStream extends FilterOutputStream {
 
     public void write(byte[] buf, int off, int len)throws IOException {
         //System.out.println(buf.length+"  "+off+"  "+len);
-        byte[] b = cipher.update(buf, off, len);
-        out.write(b);
+        out.write(cipher.update(buf, off, len));
     }
 
     public void flush()throws IOException {
-        /*
-        try{
-            out.write(cipher.doFinal());
-        }catch (Exception e){
-
-        }
-        */
         out.flush();
     }
+
+    /*
+    public void close()throws IOException {
+        try{
+            byte[] buf = cipher.doFinal();
+            if(buf.length > 0){
+                out.write(buf);
+                out.flush();
+            }
+        }catch(IllegalBlockSizeException | BadPaddingException e){
+            e.printStackTrace();
+        }
+        out.close();
+    }
+    */
 }

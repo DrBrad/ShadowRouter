@@ -65,6 +65,10 @@ public class Tunnel {
         out.write(AddressUtils.packAddress(node.getAddress()));
         out.flush();
 
+        if(in.read() != 0x00){
+            throw new IOException("Failed to connect");
+        }
+
         handshake(node);
     }
 
@@ -91,6 +95,10 @@ public class Tunnel {
         });
 
         out.flush();
+
+        if(in.read() != 0x00){
+            throw new IOException("Failed to connect");
+        }
     }
 
     private void handshake(Node node)throws IOException, NoSuchAlgorithmException, InvalidKeyException, SignatureException,
@@ -148,10 +156,10 @@ public class Tunnel {
         SecretKey secretKey = new SecretKeySpec(derivedKey, "AES");
 
         cipher.init(Cipher.DECRYPT_MODE, secretKey, new IvParameterSpec(iv));//, new GCMParameterSpec(128, iv));
-        //in = new CipherInputStream(in, cipher);
+        in = new CipherInputStream(in, cipher);
 
         cipher.init(Cipher.ENCRYPT_MODE, secretKey, new IvParameterSpec(iv));//, new GCMParameterSpec(128, iv));
-        //out = new CipherOutputStream(out, cipher);
+        out = new CipherOutputStream(out, cipher);
     }
 
     public InputStream getInputStream(){
