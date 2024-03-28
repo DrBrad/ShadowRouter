@@ -93,8 +93,6 @@ public class ShadowRouter extends KademliaBase {
     public void join(int localPort, InetSocketAddress address)throws IOException {
         super.join(localPort, address);
 
-        System.err.println(server.getClass().getSimpleName());
-
         FindNodeRequest request = new FindNodeRequest();
         request.setDestination(address);
         request.setTarget(routingTable.getDerivedUID());
