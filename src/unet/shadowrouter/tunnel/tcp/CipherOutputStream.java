@@ -29,10 +29,20 @@ public class CipherOutputStream extends FilterOutputStream {
 
     public void write(byte[] buf, int off, int len)throws IOException {
         //System.out.println(buf.length+"  "+off+"  "+len);
-        out.write(cipher.update(buf, off, len));
+        byte[] b = cipher.update(buf, off, len);
+        if(b != null){
+            out.write(b);
+        }
     }
 
     public void flush()throws IOException {
+        /*
+        try{
+            out.write(cipher.doFinal());
+        }catch (Exception e){
+
+        }
+        */
         out.flush();
     }
 }

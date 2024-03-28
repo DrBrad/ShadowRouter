@@ -262,6 +262,7 @@ public class Relay implements Runnable {
         while((len = in.read(buf)) != -1){
             if(len > 0){
                 out.write(buf, 0, len);
+                out.flush();
             }
         }
 
