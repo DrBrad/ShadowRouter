@@ -202,6 +202,7 @@ public class Relay implements Runnable {
         relay.connect(address);
 
         out.write(0x00);
+        out.flush();
 
         Thread thread = new Thread(new Runnable(){
             @Override
