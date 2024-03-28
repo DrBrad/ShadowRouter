@@ -138,8 +138,8 @@ public class Socks5 extends SocksBase {
                     Tunnel tunnel = new Tunnel();
                     try{
                         tunnel.connect(nodes.get(0), response.getPort()); //ENTRY
-                        //tunnel.relay(nodes.get(1));
-                        //tunnel.relay(nodes.get(2));
+                        tunnel.relay(nodes.get(1));
+                        tunnel.relay(nodes.get(2));
                         tunnel.exit(address, port, atype);
 
                         replyCommand(ReplyCode.GRANTED);
