@@ -17,7 +17,10 @@ public class GetPortResponse extends MethodMessageBase {
     @Override
     public BencodeObject encode(){
         BencodeObject ben = super.encode();
-        ben.getBencodeObject(type.innerKey()).put("port", port);
+        ben.getBencodeObject(type.innerKey()).put("port", new byte[]{
+                (byte) ((port >> 8) & 0xff),
+                (byte) (port & 0xff)
+        });
 
         return ben;
     }
@@ -30,7 +33,8 @@ public class GetPortResponse extends MethodMessageBase {
             //throw new MessageException("Response to "+FIND_NODE+" did not contain 'node' or 'node6'", ErrorMessage.ErrorType.PROTOCOL);
         }
 
-        port = ben.getBencodeObject(type.innerKey()).getInteger("port");
+        port = ((ben.getBencodeObject(type.innerKey()).getBytes("port")[0] & 0xff) << 8) |
+                (ben.getBencodeObject(type.innerKey()).getBytes("port")[1] & 0xff);
     }
 
     public void setPort(int port){
