@@ -71,177 +71,177 @@ public class ShadowServer extends Server {
         try{
             switch(t){
                 case REQ_MSG: {
-                    MessageKey k = new MessageKey(ben.getBencodeObject("d").getString(t.getRPCTypeName()), t);
-
-                    try{
-                        if(!messages.containsKey(k)){
-                            throw new MessageException("Method Unknown", 204);
-                        }
-
-                        MethodMessageBase m = (MethodMessageBase) messages.get(k).newInstance(ben.getBencodeObject("d").getBytes(TID_KEY));
-                        m.decode(ben.getBencodeObject("d")); //ERROR THROW - SEND ERROR MESSAGE
+                        MessageKey k = new MessageKey(ben.getBencodeObject("d").getString(t.getRPCTypeName()), t);
 
                         try{
-                            if(!KeyUtils.verify(m.getPublicKey(), ben.getBytes("s"), ben.getBencodeObject("d").encode())){
-                                throw new MessageException("Generic Error", 201);
+                            if(!messages.containsKey(k)){
+                                throw new MessageException("Method Unknown", 204);
                             }
-                        }catch(NoSuchAlgorithmException | InvalidKeyException | SignatureException e){
-                            e.printStackTrace();
+
+                            MethodMessageBase m = (MethodMessageBase) messages.get(k).newInstance(ben.getBencodeObject("d").getBytes(TID_KEY));
+                            m.decode(ben.getBencodeObject("d")); //ERROR THROW - SEND ERROR MESSAGE
+
+                            try{
+                                if(!KeyUtils.verify(m.getPublicKey(), ben.getBytes("s"), ben.getBencodeObject("d").encode())){
+                                    throw new MessageException("Generic Error", 201);
+                                }
+                            }catch(NoSuchAlgorithmException | InvalidKeyException | SignatureException e){
+                                e.printStackTrace();
+                            }
+
+                            m.setOrigin(packet.getAddress(), packet.getPort());
+
+                            if(!requestMapping.containsKey(m.getMethod())){
+                                throw new MessageException("Method Unknown", 204);
+                            }
+
+                            Node node = new SecureNode(m.getUID(), m.getOrigin(), m.getPublicKey());
+                            kademlia.getRoutingTable().insert(node);
+
+                            RequestEvent event = new RequestEvent(m, node);
+                            event.received();
+
+                            for(ReflectMethod r : requestMapping.get(m.getMethod())){
+                                r.getMethod().invoke(r.getInstance(), event); //THROW ERROR - SEND ERROR MESSAGE
+                            }
+
+                            if(event.isPreventDefault() || !event.hasResponse()){
+                                return;
+                            }
+
+                            send(event.getResponse());
+
+                            if(!kademlia.getRefreshHandler().isRunning()){
+                                kademlia.getRefreshHandler().start();
+                            }
+
+                        }catch(MessageException e){
+                            ErrorResponse response = new ErrorResponse(ben.getBytes(TID_KEY));
+                            response.setDestination(packet.getAddress(), packet.getPort());
+                            response.setPublic(packet.getAddress(), packet.getPort());
+                            response.setCode(e.getCode());
+                            response.setDescription(e.getMessage());
+                            send(response);
                         }
-
-                        m.setOrigin(packet.getAddress(), packet.getPort());
-
-                        if(!requestMapping.containsKey(m.getMethod())){
-                            throw new MessageException("Method Unknown", 204);
-                        }
-
-                        Node node = new SecureNode(m.getUID(), m.getOrigin(), m.getPublicKey());
-                        kademlia.getRoutingTable().insert(node);
-
-                        RequestEvent event = new RequestEvent(m, node);
-                        event.received();
-
-                        for(ReflectMethod r : requestMapping.get(m.getMethod())){
-                            r.getMethod().invoke(r.getInstance(), event); //THROW ERROR - SEND ERROR MESSAGE
-                        }
-
-                        if(event.isPreventDefault() || !event.hasResponse()){
-                            return;
-                        }
-
-                        send(event.getResponse());
-
-                        if(!kademlia.getRefreshHandler().isRunning()){
-                            kademlia.getRefreshHandler().start();
-                        }
-
-                    }catch(MessageException e){
-                        ErrorResponse response = new ErrorResponse(ben.getBytes(TID_KEY));
-                        response.setDestination(packet.getAddress(), packet.getPort());
-                        response.setPublic(packet.getAddress(), packet.getPort());
-                        response.setCode(e.getCode());
-                        response.setDescription(e.getMessage());
-                        send(response);
                     }
-                }
-                break;
+                    break;
 
                 case RSP_MSG: {
-                    byte[] tid = ben.getBencodeObject("d").getBytes(TID_KEY);
-                    Call call = tracker.poll(new ByteWrapper(tid));
-
-                    try{
-                        if(call == null){
-                            throw new MessageException("Server Error", 202);
-                        }
-
-                        MessageKey k = new MessageKey(((MethodMessageBase) call.getMessage()).getMethod(), t);
-                        if(!messages.containsKey(k)){
-                            throw new MessageException("Method Error", 204);
-                        }
-
-                        MethodMessageBase m = (MethodMessageBase) messages.get(k)/*.getDeclaredConstructor(byte[].class)*/.newInstance(tid);//.decode(ben);
-                        m.decode(ben.getBencodeObject("d"));
+                        byte[] tid = ben.getBencodeObject("d").getBytes(TID_KEY);
+                        Call call = tracker.poll(new ByteWrapper(tid));
 
                         try{
-                            if(!KeyUtils.verify(m.getPublicKey(), ben.getBytes("s"), ben.getBencodeObject("d").encode())){
+                            if(call == null){
                                 throw new MessageException("Server Error", 202);
                             }
-                        }catch(NoSuchAlgorithmException | InvalidKeyException | SignatureException e){
-                            e.printStackTrace();
-                        }
 
-                        m.setOrigin(packet.getAddress(), packet.getPort());
+                            MessageKey k = new MessageKey(((MethodMessageBase) call.getMessage()).getMethod(), t);
+                            if(!messages.containsKey(k)){
+                                throw new MessageException("Method Error", 204);
+                            }
 
-                        if(m.getPublic() != null){
-                            kademlia.getRoutingTable().updatePublicIPConsensus(m.getOriginAddress(), m.getPublicAddress());
-                        }
+                            MethodMessageBase m = (MethodMessageBase) messages.get(k).newInstance(tid);
+                            m.decode(ben.getBencodeObject("d"));
 
-                        if(!call.getMessage().getDestination().equals(m.getOrigin())){
-                            throw new MessageException("Generic Error", 201);
-                        }
+                            try{
+                                if(!KeyUtils.verify(m.getPublicKey(), ben.getBytes("s"), ben.getBencodeObject("d").encode())){
+                                    throw new MessageException("Server Error", 202);
+                                }
+                            }catch(NoSuchAlgorithmException | InvalidKeyException | SignatureException e){
+                                e.printStackTrace();
+                            }
 
-                        ResponseEvent event;
+                            m.setOrigin(packet.getAddress(), packet.getPort());
 
-                        if(call.hasNode()){
-                            if(!call.getNode().getUID().equals(m.getUID())){
+                            if(m.getPublic() != null){
+                                kademlia.getRoutingTable().updatePublicIPConsensus(m.getOriginAddress(), m.getPublicAddress());
+                            }
+
+                            if(!call.getMessage().getDestination().equals(m.getOrigin())){
                                 throw new MessageException("Generic Error", 201);
                             }
-                            event = new ResponseEvent(m, call.getNode());
 
-                        }else{
-                            event = new ResponseEvent(m, new SecureNode(m.getUID(), m.getOrigin(), m.getPublicKey()));
+                            ResponseEvent event;
+
+                            if(call.hasNode()){
+                                if(!call.getNode().getUID().equals(m.getUID())){
+                                    throw new MessageException("Generic Error", 201);
+                                }
+                                event = new ResponseEvent(m, call.getNode());
+
+                            }else{
+                                event = new ResponseEvent(m, new SecureNode(m.getUID(), m.getOrigin(), m.getPublicKey()));
+                            }
+
+                            event.received();
+                            event.setSentTime(call.getSentTime());
+                            event.setRequest(call.getMessage());
+
+                            if(call.hasResponseCallback()){
+                                call.getResponseCallback().onResponse(event);
+                            }
+
+                        }catch(MessageException e){
+                            e.printStackTrace();
                         }
-
-                        event.received();
-                        event.setSentTime(call.getSentTime());
-                        event.setRequest(call.getMessage());
-
-                        if(call.hasResponseCallback()){
-                            call.getResponseCallback().onResponse(event);
-                        }
-
-                    }catch(MessageException e){
-                        e.printStackTrace();
                     }
-                }
-                break;
+                    break;
 
                 case ERR_MSG: {
-                    byte[] tid = ben.getBencodeObject("d").getBytes(TID_KEY);
-                    Call call = tracker.poll(new ByteWrapper(tid));
-
-                    try{
-                        if(call == null){
-                            return;
-                        }
-
-                        SecureErrorResponse m = new SecureErrorResponse(tid);
-                        m.decode(ben.getBencodeObject("d"));
+                        byte[] tid = ben.getBencodeObject("d").getBytes(TID_KEY);
+                        Call call = tracker.poll(new ByteWrapper(tid));
 
                         try{
-                            if(!KeyUtils.verify(m.getPublicKey(), ben.getBytes("s"), ben.getBencodeObject("d").encode())){
-                                throw new MessageException("Server Error", 202);
+                            if(call == null){
+                                return;
                             }
-                        }catch(NoSuchAlgorithmException | InvalidKeyException | SignatureException e){
-                            e.printStackTrace();
-                        }
 
-                        m.setOrigin(packet.getAddress(), packet.getPort());
+                            SecureErrorResponse m = new SecureErrorResponse(tid);
+                            m.decode(ben.getBencodeObject("d"));
 
-                        if(m.getPublic() != null){
-                            kademlia.getRoutingTable().updatePublicIPConsensus(m.getOriginAddress(), m.getPublicAddress());
-                        }
+                            try{
+                                if(!KeyUtils.verify(m.getPublicKey(), ben.getBytes("s"), ben.getBencodeObject("d").encode())){
+                                    throw new MessageException("Server Error", 202);
+                                }
+                            }catch(NoSuchAlgorithmException | InvalidKeyException | SignatureException e){
+                                e.printStackTrace();
+                            }
 
-                        if(!call.getMessage().getDestination().equals(m.getOrigin())){
-                            throw new MessageException("Generic Error", 201);
-                        }
+                            m.setOrigin(packet.getAddress(), packet.getPort());
 
-                        ErrorResponseEvent event;
+                            if(m.getPublic() != null){
+                                kademlia.getRoutingTable().updatePublicIPConsensus(m.getOriginAddress(), m.getPublicAddress());
+                            }
 
-                        if(call.hasNode()){
-                            if(!call.getNode().getUID().equals(m.getUID())){
+                            if(!call.getMessage().getDestination().equals(m.getOrigin())){
                                 throw new MessageException("Generic Error", 201);
                             }
-                            event = new ErrorResponseEvent(m, call.getNode());
 
-                        }else{
-                            event = new ErrorResponseEvent(m, new SecureNode(m.getUID(), m.getOrigin(), m.getPublicKey()));
+                            ErrorResponseEvent event;
+
+                            if(call.hasNode()){
+                                if(!call.getNode().getUID().equals(m.getUID())){
+                                    throw new MessageException("Generic Error", 201);
+                                }
+                                event = new ErrorResponseEvent(m, call.getNode());
+
+                            }else{
+                                event = new ErrorResponseEvent(m, new SecureNode(m.getUID(), m.getOrigin(), m.getPublicKey()));
+                            }
+
+                            event.received();
+                            event.setSentTime(call.getSentTime());
+                            event.setRequest(call.getMessage());
+
+                            if(call.hasResponseCallback()){
+                                call.getResponseCallback().onErrorResponse(event);
+                            }
+
+                        }catch(MessageException e){
+                            e.printStackTrace();
                         }
-
-                        event.received();
-                        event.setSentTime(call.getSentTime());
-                        event.setRequest(call.getMessage());
-
-                        if(call.hasResponseCallback()){
-                            call.getResponseCallback().onErrorResponse(event);
-                        }
-
-                    }catch(MessageException e){
-                        e.printStackTrace();
                     }
-                }
-                break;
+                    break;
             }
 
         }catch(IllegalArgumentException | InvocationTargetException | InstantiationException | IllegalAccessException |

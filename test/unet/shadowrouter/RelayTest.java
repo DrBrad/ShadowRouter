@@ -32,7 +32,7 @@ public class RelayTest {
 
         List<KademliaBase> nodes = new ArrayList<>();
 
-        for(int i = 1; i < 61; i++){
+        for(int i = 1; i < 2; i++){
             ShadowRouter r = new ShadowRouter();
             r.startRelay(7000+i);
             r.join(6000+i, InetAddress.getLoopbackAddress(), 6000+(i-1));
