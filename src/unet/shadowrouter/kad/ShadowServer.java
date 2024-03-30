@@ -250,19 +250,23 @@ public class ShadowServer extends Server {
             //throw new IllegalArgumentException("Message destination set to bogon");
         }
 
-        if(message.getType() != MessageType.ERR_MSG){
-            if(!(message instanceof SecureMessageBase)){
-                throw new IllegalArgumentException("Message must inherit SecureMessageBase");
-            }
-
-            message.setUID(kademlia.getRoutingTable().getDerivedUID());
-            ((SecureMessageBase) message).setPublicKey(keyPair.getPublic());
-        }
-
         try{
             BencodeObject ben = new BencodeObject();
-            ben.put("d", message.encode());
-            ben.put("s", KeyUtils.sign(keyPair.getPrivate(), ben.getBencodeObject("d").encode()));
+
+            if(message.getType() != MessageType.ERR_MSG){
+                if(!(message instanceof SecureMessageBase)){
+                    throw new IllegalArgumentException("Message must inherit SecureMessageBase");
+                }
+
+                message.setUID(kademlia.getRoutingTable().getDerivedUID());
+                ((SecureMessageBase) message).setPublicKey(keyPair.getPublic());
+                ben.put("d", message.encode());
+                ben.put("s", KeyUtils.sign(keyPair.getPrivate(), ben.getBencodeObject("d").encode()));
+
+            }else{
+                ben.put("d", message.encode());
+            }
+
             byte[] data = ben.encode();
 
             server.send(new DatagramPacket(data, 0, data.length, message.getDestination()));
