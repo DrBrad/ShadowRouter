@@ -1,6 +1,7 @@
 package unet.shadowrouter.kad.messages;
 
 import unet.kad4.messages.inter.Message;
+import unet.kad4.messages.inter.MessageException;
 import unet.kad4.messages.inter.MessageType;
 import unet.shadowrouter.kad.messages.inter.MethodMessageBase;
 
@@ -10,7 +11,7 @@ public class GetPortRequest extends MethodMessageBase {
     public GetPortRequest(){
     }
 
-    public GetPortRequest(byte[] tid){
+    public GetPortRequest(byte[] tid)throws MessageException {
         super(tid);
     }
 }

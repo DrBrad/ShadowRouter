@@ -2,6 +2,7 @@ package unet.shadowrouter.kad.messages;
 
 import unet.bencode.variables.BencodeObject;
 import unet.kad4.messages.inter.Message;
+import unet.kad4.messages.inter.MessageException;
 import unet.kad4.messages.inter.MessageType;
 import unet.shadowrouter.kad.messages.inter.MethodMessageBase;
 
@@ -26,11 +27,11 @@ public class GetPortResponse extends MethodMessageBase {
     }
 
     @Override
-    public void decode(BencodeObject ben){
+    public void decode(BencodeObject ben)throws MessageException {
         super.decode(ben);
 
         if(!ben.getBencodeObject(type.innerKey()).containsKey("port")){
-            //throw new MessageException("Response to "+FIND_NODE+" did not contain 'node' or 'node6'", ErrorMessage.ErrorType.PROTOCOL);
+            throw new MessageException("Protocol Error, such as a malformed packet.", 203);
         }
 
         port = ((ben.getBencodeObject(type.innerKey()).getBytes("port")[0] & 0xff) << 8) |

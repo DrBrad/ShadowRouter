@@ -3,6 +3,7 @@ package unet.shadowrouter.kad.messages.inter;
 import unet.bencode.variables.BencodeObject;
 import unet.kad4.messages.inter.Message;
 import unet.kad4.messages.inter.MessageBase;
+import unet.kad4.messages.inter.MessageException;
 import unet.kad4.utils.UID;
 import unet.kad4.utils.net.AddressUtils;
 import unet.shadowrouter.kad.utils.KeyUtils;
@@ -55,15 +56,15 @@ public class MethodMessageBase extends SecureMessageBase {
     }
 
     @Override
-    public void decode(BencodeObject ben){
+    public void decode(BencodeObject ben)throws MessageException {
         super.decode(ben);
 
         if(!ben.getBencodeObject(type.innerKey()).containsKey("id")){
-            //throw new MessageException("Request doesn't contain UID", ErrorMessage.ErrorType.PROTOCOL);
+            throw new MessageException("Protocol Error, such as a malformed packet.", 203);
         }
 
         if(!ben.getBencodeObject(type.innerKey()).containsKey("k")){
-            //throw new MessageException("Request doesn't contain Public Key");
+            throw new MessageException("Protocol Error, such as a malformed packet.", 203);
         }
 
         uid = new UID(ben.getBencodeObject(type.innerKey()).getBytes("id"));

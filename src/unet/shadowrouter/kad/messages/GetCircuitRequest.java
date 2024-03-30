@@ -3,6 +3,7 @@ package unet.shadowrouter.kad.messages;
 
 import unet.bencode.variables.BencodeObject;
 import unet.kad4.messages.inter.Message;
+import unet.kad4.messages.inter.MessageException;
 import unet.kad4.messages.inter.MessageType;
 import unet.kad4.messages.inter.MethodMessageBase;
 
@@ -24,7 +25,7 @@ public class GetCircuitRequest extends MethodMessageBase {
     }
 
     @Override
-    public void decode(BencodeObject ben){
+    public void decode(BencodeObject ben)throws MessageException {
         super.decode(ben);
     }
 

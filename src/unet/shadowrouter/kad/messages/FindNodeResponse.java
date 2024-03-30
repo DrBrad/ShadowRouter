@@ -2,6 +2,7 @@ package unet.shadowrouter.kad.messages;
 
 import unet.bencode.variables.BencodeObject;
 import unet.kad4.messages.inter.Message;
+import unet.kad4.messages.inter.MessageException;
 import unet.kad4.messages.inter.MessageType;
 import unet.kad4.utils.net.AddressType;
 import unet.shadowrouter.kad.utils.SecureNode;
@@ -35,7 +36,6 @@ public class FindNodeResponse extends MethodMessageBase {
     @Override
     public BencodeObject encode(){
         BencodeObject ben = super.encode();
-        //ben.getBencodeObject(message.type().innerKey()).put("target", target.getBytes());
 
         if(nodes.isEmpty()){
             return ben;
@@ -54,12 +54,12 @@ public class FindNodeResponse extends MethodMessageBase {
     }
 
     @Override
-    public void decode(BencodeObject ben){
+    public void decode(BencodeObject ben)throws MessageException {
         super.decode(ben);
 
         if(!ben.getBencodeObject(type.innerKey()).containsKey("nodes") &&
                 !ben.getBencodeObject(type.innerKey()).containsKey("nodes6")){
-            //throw new MessageException("Response to "+FIND_NODE+" did not contain 'node' or 'node6'", ErrorMessage.ErrorType.PROTOCOL);
+            throw new MessageException("Protocol Error, such as a malformed packet.", 203);
         }
 
         if(ben.getBencodeObject(type.innerKey()).containsKey("nodes")){
