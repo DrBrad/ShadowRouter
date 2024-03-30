@@ -10,7 +10,9 @@ import unet.kad4.messages.inter.MethodMessageBase;
 @Message(method = "find_circuit", type = MessageType.REQ_MSG)
 public class PutCircuitRequest extends MethodMessageBase {
 
-    //private TunnelType tunnelType;
+    /*
+    Must contain descriptors of 3 routes.
+    */
 
     public PutCircuitRequest(){
     }
