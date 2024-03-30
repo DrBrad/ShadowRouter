@@ -40,11 +40,16 @@ public class SRequestListener extends RequestListener {
 
         FindNodeRequest request = (FindNodeRequest) event.getMessage();
 
-        FindNodeResponse response = new FindNodeResponse(request.getTransactionID());
-        response.setDestination(event.getMessage().getOrigin());
-        response.setPublic(event.getMessage().getOrigin());
-        response.addNodes((List<SecureNode>)(List<?>) getRoutingTable().findClosest(request.getTarget(), KBucket.MAX_BUCKET_SIZE));
-        event.setResponse(response);
+        List<SecureNode> nodes = (List<SecureNode>)(List<?>) getRoutingTable().findClosest(request.getTarget(), KBucket.MAX_BUCKET_SIZE);
+        nodes.remove((SecureNode) event.getNode());
+
+        if(!nodes.isEmpty()){
+            FindNodeResponse response = new FindNodeResponse(request.getTransactionID());
+            response.setDestination(event.getMessage().getOrigin());
+            response.setPublic(event.getMessage().getOrigin());
+            response.addNodes(nodes);
+            event.setResponse(response);
+        }
     }
 
     @RequestMapping("get_port")

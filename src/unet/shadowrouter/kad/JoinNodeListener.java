@@ -57,7 +57,6 @@ public class JoinNodeListener extends ResponseCallback {
 
     @Override
     public void onErrorResponse(ErrorResponseEvent event){
-
     }
 
     @Override

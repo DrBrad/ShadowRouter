@@ -54,17 +54,6 @@ public class ShadowRouter extends KademliaBase {
         });
 
         try{
-            //server.registerRequestListener(new KRequestListener());
-            /*
-            registerRequestListener(new KRequestListener());
-
-            registerMessage(PingRequest.class);
-            registerMessage(PingResponse.class);
-            registerMessage(FindNodeRequest.class);
-            registerMessage(FindNodeResponse.class);
-            registerMessage(GetPortRequest.class);
-            registerMessage(GetPortResponse.class);
-            */
             server.registerMessage(PingRequest.class);
             server.registerMessage(PingResponse.class);
             server.registerMessage(FindNodeRequest.class);
