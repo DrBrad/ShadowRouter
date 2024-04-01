@@ -62,6 +62,14 @@ public class Resolver {
         socket.send(dnsReqPacket);
 
 
+
+
+
+
+
+
+
+
         byte[] response = new byte[1024];
         DatagramPacket packet = new DatagramPacket(response, response.length);
         socket.receive(packet);
