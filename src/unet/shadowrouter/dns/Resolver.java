@@ -38,6 +38,7 @@ public class Resolver {
 
         id = ((buf[0] & 0xFF) << 8) | (buf[1] & 0xFF);
 
+        System.out.println("RESPONSE LENGTH: "+packet.getLength());
         DNSResponse response = new DNSResponse(id);
         response.decode(buf);
 
@@ -45,11 +46,9 @@ public class Resolver {
 
 
 
-        /*
 
-        byte[] response = new byte[1024];
-        DatagramPacket packet = new DatagramPacket(response, response.length);
-        socket.receive(packet);
+        /*
+        byte[] response = buf;
 
         System.out.println("\n\nReceived: " + packet.getLength() + " bytes");
         for (int i = 0; i < packet.getLength(); i++) {

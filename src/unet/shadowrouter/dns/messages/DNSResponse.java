@@ -57,6 +57,8 @@ public class DNSResponse extends MessageBase {
             byte[] rdata = parseRData(buf, offset + name.length() + 12, rdLength); // Decode data
             offset += name.length() + 12 + rdLength; // Move offset to the next resource record
 
+            System.out.println(offset+"  "+buf.length);
+
             // Display the decoded resource record
             System.out.println(rdLength);
             System.out.println("Name: " + name + ", Type: " + type + ", Class: " + cls + ", TTL: " + ttl + ", RDATA: " + Arrays.toString(rdata));
