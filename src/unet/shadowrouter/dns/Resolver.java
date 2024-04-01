@@ -39,19 +39,20 @@ public class Resolver {
         id = ((buf[0] & 0xFF) << 8) | (buf[1] & 0xFF);
 
         System.out.println("RESPONSE LENGTH: "+packet.getLength());
+
+        test2(buf, 0, packet.getLength());
+
+        System.out.println("");
+        System.out.println("");
+        System.out.println("");
+        System.out.println("");
+
         DNSResponse response = new DNSResponse(id);
         response.decode(buf);
+    }
 
-
-
-
-
-
-        /*
-        byte[] response = buf;
-
-        System.out.println("\n\nReceived: " + packet.getLength() + " bytes");
-        for (int i = 0; i < packet.getLength(); i++) {
+    public void test2(byte[] response, int off, int len)throws IOException {
+        for (int i = 0; i < len; i++) {
             System.out.print(String.format("%s", response[i]) + " ");
         }
         System.out.println("\n");
@@ -65,28 +66,34 @@ public class Resolver {
         int AA = ( flags & 0b00000100) >>> 2;
         int TC = ( flags & 0b00000010) >>> 1;
         int RD = flags & 0b00000001;
+        /*
         System.out.println("QR "+QR);
         System.out.println("Opcode "+opCode);
         System.out.println("AA "+AA);
         System.out.println("TC "+TC);
         System.out.println("RD "+RD);
+        */
         flags = dataInputStream.readByte();
         int RA = (flags & 0b10000000) >>> 7;
         int Z = ( flags & 0b01110000) >>> 4;
         int RCODE = flags & 0b00001111;
+        /*
         System.out.println("RA "+RA);
         System.out.println("Z "+ Z);
         System.out.println("RCODE " +RCODE);
+        */
 
         short QDCOUNT = dataInputStream.readShort();
         short ANCOUNT = dataInputStream.readShort();
         short NSCOUNT = dataInputStream.readShort();
         short ARCOUNT = dataInputStream.readShort();
 
+        /*
         System.out.println("Questions: " + String.format("%s",QDCOUNT ));
         System.out.println("Answers RRs: " + String.format("%s", ANCOUNT));
         System.out.println("Authority RRs: " + String.format("%s", NSCOUNT));
         System.out.println("Additional RRs: " + String.format("%s", ARCOUNT));
+        */
 
         String QNAME = "";
         int recLen;
@@ -103,6 +110,7 @@ public class Resolver {
         System.out.println("Record Type: " + String.format("%s", QTYPE));
         System.out.println("Class: " + String.format("%s", QCLASS));
 
+        /*
         System.out.println("\n\nstart answer, authority, and additional sections\n");
 
         byte firstBytes = dataInputStream.readByte();
@@ -171,7 +179,6 @@ public class Resolver {
             firstTwoBits = (firstBytes & 0b11000000) >>> 6;
         }
 
-        domainToIp.forEach((key, value) -> System.out.println(key + " : " + value));
-        */
+        domainToIp.forEach((key, value) -> System.out.println(key + " : " + value));*/
     }
 }
