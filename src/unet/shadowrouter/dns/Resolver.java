@@ -1,5 +1,7 @@
 package unet.shadowrouter.dns;
 
+import unet.shadowrouter.dns.messages.Request;
+
 import java.io.*;
 import java.net.DatagramPacket;
 import java.net.DatagramSocket;
@@ -15,9 +17,20 @@ public class Resolver {
     public Resolver(String domain)throws IOException {
         InetAddress ipAddress = InetAddress.getByName("1.1.1.1");
 
+
+        Random random = new Random();
+        int id = random.nextInt(32767);
+        byte[] pack = new Request(domain, id).encode();
+
+        DatagramSocket socket = new DatagramSocket();
+        DatagramPacket dnsReqPacket = new DatagramPacket(pack, pack.length, ipAddress, DNS_SERVER_PORT);
+        socket.send(dnsReqPacket);
+        /*
         Random random = new Random();
         short ID = (short)random.nextInt(32767);
         System.out.println(ID);
+
+
         ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
         DataOutputStream dataOutputStream = new DataOutputStream(byteArrayOutputStream);
 
@@ -36,6 +49,8 @@ public class Resolver {
         dataOutputStream.writeShort(ANCOUNT);
         dataOutputStream.writeShort(NSCOUNT);
         dataOutputStream.writeShort(ARCOUNT);
+
+
         String[] domainParts = domain.split("\\.");
 
         for (int i = 0; i < domainParts.length; i++) {
@@ -60,6 +75,7 @@ public class Resolver {
         DatagramSocket socket = new DatagramSocket();
         DatagramPacket dnsReqPacket = new DatagramPacket(dnsFrame, dnsFrame.length, ipAddress, DNS_SERVER_PORT);
         socket.send(dnsReqPacket);
+        */
 
 
 
@@ -102,10 +118,10 @@ public class Resolver {
         System.out.println("Z "+ Z);
         System.out.println("RCODE " +RCODE);
 
-        QDCOUNT = dataInputStream.readShort();
-        ANCOUNT = dataInputStream.readShort();
-        NSCOUNT = dataInputStream.readShort();
-        ARCOUNT = dataInputStream.readShort();
+        short QDCOUNT = dataInputStream.readShort();
+        short ANCOUNT = dataInputStream.readShort();
+        short NSCOUNT = dataInputStream.readShort();
+        short ARCOUNT = dataInputStream.readShort();
 
         System.out.println("Questions: " + String.format("%s",QDCOUNT ));
         System.out.println("Answers RRs: " + String.format("%s", ANCOUNT));
