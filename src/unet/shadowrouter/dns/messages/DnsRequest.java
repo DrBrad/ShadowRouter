@@ -1,17 +1,21 @@
 package unet.shadowrouter.dns.messages;
 
+import unet.shadowrouter.dns.messages.inter.DnsClass;
 import unet.shadowrouter.dns.messages.inter.MessageBase;
+import unet.shadowrouter.dns.messages.inter.Type;
 
 import java.nio.charset.StandardCharsets;
 
-public class DNSRequest extends MessageBase {
+public class DnsRequest extends MessageBase {
 
     private String domain;
+    private Type type;
+    private DnsClass dnsClass;
 
-    public DNSRequest(){
+    public DnsRequest(){
     }
 
-    public DNSRequest(int id){
+    public DnsRequest(int id){
         this.id = id;
     }
 
@@ -69,12 +73,12 @@ public class DNSRequest extends MessageBase {
         dnsFrame[offset++] = 0x00;
 
         // QTYPE (16 bits) - A record
-        dnsFrame[offset++] = 0x00;
-        dnsFrame[offset++] = 0x01;
+        dnsFrame[offset++] = ((byte) (type.getCode() >> 8));
+        dnsFrame[offset++] = ((byte) type.getCode());
 
         // QCLASS (16 bits) - IN class
-        dnsFrame[offset++] = 0x00;
-        dnsFrame[offset++] = 0x01;
+        dnsFrame[offset++] = ((byte) (dnsClass.getCode() >> 8));
+        dnsFrame[offset++] = ((byte) dnsClass.getCode());
 
         // Truncate unused portion of the byte array
         byte[] truncatedFrame = new byte[offset];
@@ -95,5 +99,21 @@ public class DNSRequest extends MessageBase {
 
     public String getDomain(){
         return domain;
+    }
+
+    public void setType(Type type){
+        this.type = type;
+    }
+
+    public Type getType(){
+        return type;
+    }
+
+    public void setDnsClass(DnsClass dnsClass){
+        this.dnsClass = dnsClass;
+    }
+
+    public DnsClass getDnsClass(){
+        return dnsClass;
     }
 }

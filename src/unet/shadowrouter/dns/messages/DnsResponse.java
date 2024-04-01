@@ -1,16 +1,18 @@
 package unet.shadowrouter.dns.messages;
 
+import unet.shadowrouter.dns.messages.inter.DnsClass;
 import unet.shadowrouter.dns.messages.inter.MessageBase;
+import unet.shadowrouter.dns.messages.inter.Type;
 
 import java.net.InetAddress;
 import java.net.UnknownHostException;
 import java.util.List;
 
-public class DNSResponse extends MessageBase {
+public class DnsResponse extends MessageBase {
 
     private List<InetAddress> addresses;
 
-    public DNSResponse(int id){
+    public DnsResponse(int id){
         this.id = id;
     }
 
@@ -62,8 +64,8 @@ public class DNSResponse extends MessageBase {
         }
 
         String QNAME = new String(qname);
-        int QTYPE = ((buf[offset+1] & 0xFF) << 8) | (buf[offset+2] & 0xFF);
-        int QCLASS = ((buf[offset+3] & 0xFF) << 8) | (buf[offset+4] & 0xFF);
+        Type qtype = Type.getTypeFromCode(((buf[offset+1] & 0xFF) << 8) | (buf[offset+2] & 0xFF));
+        DnsClass qclass = DnsClass.getClassFromCode(((buf[offset+3] & 0xFF) << 8) | (buf[offset+4] & 0xFF));
         offset += 5;
 
         //System.out.println("Record: " + QNAME);
@@ -75,9 +77,9 @@ public class DNSResponse extends MessageBase {
                 case 3:
                     byte current = buf[offset+1];
 
-                    int TYPE = ((buf[offset+2] & 0xFF) << 8) | (buf[offset+3] & 0xFF);
+                    Type type = Type.getTypeFromCode(((buf[offset+2] & 0xFF) << 8) | (buf[offset+3] & 0xFF));
 
-                    int CLASS = ((buf[offset+4] & 0xFF) << 8) | (buf[offset+5] & 0xFF);
+                    DnsClass dnsClass = DnsClass.getClassFromCode(((buf[offset+4] & 0xFF) << 8) | (buf[offset+5] & 0xFF));
 
                     int TTL = (((buf[offset+6] & 0xff) << 24) |
                             ((buf[offset+7] & 0xff) << 16) |
@@ -89,8 +91,8 @@ public class DNSResponse extends MessageBase {
                     try{
                         InetAddress address = InetAddress.getByAddress(addr);
 
-                        System.out.println("Type: " + TYPE);
-                        System.out.println("Class: " + CLASS);
+                        System.out.println("Type: " + type);
+                        System.out.println("Class: " + dnsClass);
                         System.out.println("Time to live: " + TTL);
                         System.out.println("Rd Length: " + addr.length);
                         System.out.println(address.getHostAddress());

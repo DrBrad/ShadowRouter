@@ -1,13 +1,14 @@
 package unet.shadowrouter.dns;
 
-import unet.shadowrouter.dns.messages.DNSRequest;
-import unet.shadowrouter.dns.messages.DNSResponse;
+import unet.shadowrouter.dns.messages.DnsRequest;
+import unet.shadowrouter.dns.messages.DnsResponse;
+import unet.shadowrouter.dns.messages.inter.DnsClass;
+import unet.shadowrouter.dns.messages.inter.Type;
 
 import java.io.*;
 import java.net.DatagramPacket;
 import java.net.DatagramSocket;
 import java.net.InetAddress;
-import java.nio.charset.StandardCharsets;
 import java.util.*;
 
 public class Resolver {
@@ -20,8 +21,10 @@ public class Resolver {
 
         Random random = new Random();
         int id = random.nextInt(32767);
-        DNSRequest request = new DNSRequest(id);
+        DnsRequest request = new DnsRequest(id);
         request.setDomain(domain);
+        request.setType(Type.A);
+        request.setDnsClass(DnsClass.IN);
         byte[] buf = request.encode();
 
         DatagramSocket socket = new DatagramSocket();
@@ -39,7 +42,7 @@ public class Resolver {
 
         id = ((buf[0] & 0xFF) << 8) | (buf[1] & 0xFF);
 
-        DNSResponse response = new DNSResponse(id);
+        DnsResponse response = new DnsResponse(id);
         response.decode(buf);
     }
 }
