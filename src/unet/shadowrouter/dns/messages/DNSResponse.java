@@ -4,7 +4,6 @@ import unet.shadowrouter.dns.messages.inter.MessageBase;
 
 import java.net.InetAddress;
 import java.net.UnknownHostException;
-import java.util.Arrays;
 
 public class DNSResponse extends MessageBase {
 
@@ -62,117 +61,50 @@ public class DNSResponse extends MessageBase {
         String QNAME = new String(qname);
         int QTYPE = ((buf[offset+1] & 0xFF) << 8) | (buf[offset+2] & 0xFF);
         int QCLASS = ((buf[offset+3] & 0xFF) << 8) | (buf[offset+4] & 0xFF);
+        offset += 5;
 
-        System.out.println("Record: " + QNAME);
-        System.out.println("Record Type: " + String.format("%s", QTYPE));
-        System.out.println("Class: " + String.format("%s", QCLASS));
-
-
-        /*
-        // Decode the resource records (answers) if any
-        int offset = 12; // Start of resource records section
-        for (int i = 0; i < /*ANCOUNT*./2; i++) {
-
-            // Decode each answer record
-            String name = parseDomainName(buf, offset); // Decode domain name
-            offset += name.length();
-
-            int type = (short) ((buf[offset] << 8) |
-                    (buf[offset+1] & 0xff)); // Decode record type
-            offset += 2;
-
-            int cls = (short) ((buf[offset] << 8) |
-                    (buf[offset+1] & 0xff)); // Decode record class
-            offset += 2;
-
-            int ttl = (((buf[offset] & 0xff) << 24) |
-                    ((buf[offset+1] & 0xff) << 16) |
-                    ((buf[offset+2] & 0xff) << 8) |
-                    (buf[offset+3] & 0xff));//parseTTL(buf, offset + name.length() + 6); // Decode TTL
-            offset += 4;
-            //int rdLength = parseRDLength(buf, offset + name.length() + 10); // Decode data length
-            //byte[] rdata = parseRData(buf, offset + name.length() + 12, rdLength); // Decode data
-            //offset += name.length() + 12 + rdLength; // Move offset to the next resource record
+        //System.out.println("Record: " + QNAME);
+        //System.out.println("Record Type: " + String.format("%s", QTYPE));
+        //System.out.println("Class: " + String.format("%s", QCLASS));
 
 
-            int rd = (short) ((buf[offset] << 8) |
-                    (buf[offset+1] & 0xff)); // Decode record class
-            offset += 2;
+        for(int i = 0; i < ANCOUNT; i++){
+            switch((buf[offset] & 0b11000000) >>> 6){
+                case 3:
+                    byte current = buf[offset+1];
 
-            System.out.println(offset+"  "+rd);
+                    int TYPE = ((buf[offset+2] & 0xFF) << 8) | (buf[offset+3] & 0xFF);
 
-            // Display the decoded resource record
+                    int CLASS = ((buf[offset+4] & 0xFF) << 8) | (buf[offset+5] & 0xFF);
 
-            //System.out.println(rdLength);
-            System.out.println("Name: " + name + ", Type: " + type + ", Class: " + cls + ", TTL: " + ttl + ", RDATA: ");// + Arrays.toString(rdata));
+                    int TTL = (((buf[offset+6] & 0xff) << 24) |
+                            ((buf[offset+7] & 0xff) << 16) |
+                            ((buf[offset+8] & 0xff) << 8) |
+                            (buf[offset+9] & 0xff));
 
-            /*
-            if (type == 1 && rdLength == 4) { // A record (IPv4 address)
-                try {
-                    InetAddress ipAddress = InetAddress.getByAddress(rdata);
-                    System.out.println("IPv4 Address: " + ipAddress.getHostAddress());
-                } catch (UnknownHostException e) {
-                    e.printStackTrace();
-                }
-            }*./
+                    byte[] addr = new byte[((buf[offset+10] & 0xFF) << 8) | (buf[offset+11] & 0xFF)];
+                    System.arraycopy(buf, offset+12, addr, 0, addr.length);
+                    try{
+                        InetAddress address = InetAddress.getByAddress(addr);
 
-            // Decode each answer record
-            // Assuming answer format: NAME (domain name), TYPE (record type), CLASS (record class), TTL (time to live), RDLENGTH (data length), RDATA (data)
-            // Adjust parsing logic based on your specific use case
-            // Example: String name = parseDomainName(dnsResponse, offset);
-            // Example: int type = parseType(dnsResponse, offset + nameLength);
-            // Example: int cls = parseClass(dnsResponse, offset + nameLength + typeLength);
-            // Example: int ttl = parseTTL(dnsResponse, offset + nameLength + typeLength + clsLength);
-            // Example: int rdLength = parseRDLength(dnsResponse, offset + nameLength + typeLength + clsLength + ttlLength);
-            // Example: byte[] rdata = parseRData(dnsResponse, offset + nameLength + typeLength + clsLength + ttlLength + rdLengthLength);
-            // Example: offset += nameLength + typeLength + clsLength + ttlLength + rdLengthLength + rdLength;
-            // Example: System.out.println("Name: " + name + ", Type: " + type + ", Class: " + cls + ", TTL: " + ttl + ", RDATA: " + Arrays.toString(rdata));
-        }
-        */
-    }
+                        System.out.println("Type: " + TYPE);
+                        System.out.println("Class: " + CLASS);
+                        System.out.println("Time to live: " + TTL);
+                        System.out.println("Rd Length: " + addr.length);
+                        System.out.println(address.getHostAddress());
 
-    private static String parseDomainName(byte[] dnsResponse, int offset) {
-        StringBuilder domainName = new StringBuilder();
-        int length = dnsResponse[offset++];
-        while (length != 0) {
-            if ((length & 0xC0) == 0xC0) {
-                // Compression pointer
-                int pointer = ((length & 0x3F) << 8) | (dnsResponse[offset++] & 0xFF);
-                parseDomainName(dnsResponse, pointer); // Recursively parse the domain name from the pointer
-                return domainName.toString();
+                    }catch(UnknownHostException e){
+                        e.printStackTrace();
+                    }
+
+                    offset += addr.length+12;
+                    break;
+
+                case 0:
+
+                    break;
             }
-            for (int i = 0; i < length; i++) {
-                domainName.append((char) dnsResponse[offset++]);
-            }
-            domainName.append('.');
-            length = dnsResponse[offset++];
+            offset++;
         }
-        domainName.deleteCharAt(domainName.length() - 1); // Remove the trailing dot
-        return domainName.toString();
-    }
-
-    private static int parseType(byte[] dnsResponse, int offset) {
-        return ((dnsResponse[offset] & 0xFF) << 8) | (dnsResponse[offset + 1] & 0xFF);
-    }
-
-    private static int parseClass(byte[] dnsResponse, int offset) {
-        return ((dnsResponse[offset] & 0xFF) << 8) | (dnsResponse[offset + 1] & 0xFF);
-    }
-
-    private static int parseTTL(byte[] dnsResponse, int offset) {
-        return ((dnsResponse[offset] & 0xFF) << 24) |
-                ((dnsResponse[offset + 1] & 0xFF) << 16) |
-                ((dnsResponse[offset + 2] & 0xFF) << 8) |
-                (dnsResponse[offset + 3] & 0xFF);
-    }
-
-    private static int parseRDLength(byte[] dnsResponse, int offset) {
-        return ((dnsResponse[offset] & 0xFF) << 8) | (dnsResponse[offset + 1] & 0xFF);
-    }
-
-    private static byte[] parseRData(byte[] dnsResponse, int offset, int rdLength) {
-        byte[] rdata = new byte[rdLength];
-        System.arraycopy(dnsResponse, offset, rdata, 0, rdLength);
-        return rdata;
     }
 }
