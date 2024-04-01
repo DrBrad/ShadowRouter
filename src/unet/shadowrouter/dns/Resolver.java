@@ -35,6 +35,7 @@ public class Resolver {
         buf = new byte[1024];
         DatagramPacket packet = new DatagramPacket(buf, buf.length);
         socket.receive(packet);
+        System.out.println(packet.getLength());
 
         id = ((buf[0] & 0xFF) << 8) | (buf[1] & 0xFF);
 

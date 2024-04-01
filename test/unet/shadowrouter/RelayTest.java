@@ -25,7 +25,7 @@ public class RelayTest {
     public static void main(String[] args)throws Exception {
 
 
-        Resolver resolver = new Resolver("www.google.com");
+        Resolver resolver = new Resolver("flixbox.tv");
 
 
 

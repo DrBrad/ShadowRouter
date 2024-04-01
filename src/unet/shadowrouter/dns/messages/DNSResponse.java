@@ -4,8 +4,11 @@ import unet.shadowrouter.dns.messages.inter.MessageBase;
 
 import java.net.InetAddress;
 import java.net.UnknownHostException;
+import java.util.List;
 
 public class DNSResponse extends MessageBase {
+
+    private List<InetAddress> addresses;
 
     public DNSResponse(int id){
         this.id = id;
@@ -67,7 +70,6 @@ public class DNSResponse extends MessageBase {
         //System.out.println("Record Type: " + String.format("%s", QTYPE));
         //System.out.println("Class: " + String.format("%s", QCLASS));
 
-
         for(int i = 0; i < ANCOUNT; i++){
             switch((buf[offset] & 0b11000000) >>> 6){
                 case 3:
@@ -92,6 +94,7 @@ public class DNSResponse extends MessageBase {
                         System.out.println("Time to live: " + TTL);
                         System.out.println("Rd Length: " + addr.length);
                         System.out.println(address.getHostAddress());
+                        System.out.println();
 
                     }catch(UnknownHostException e){
                         e.printStackTrace();
@@ -101,10 +104,13 @@ public class DNSResponse extends MessageBase {
                     break;
 
                 case 0:
-
+                    offset++;
                     break;
             }
-            offset++;
         }
+    }
+
+    public void addAddress(){
+
     }
 }
