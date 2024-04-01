@@ -1,12 +1,12 @@
 package unet.shadowrouter.dns;
 
-import unet.shadowrouter.dns.messages.Request;
+import unet.shadowrouter.dns.messages.DNSRequest;
+import unet.shadowrouter.dns.messages.DNSResponse;
 
 import java.io.*;
 import java.net.DatagramPacket;
 import java.net.DatagramSocket;
 import java.net.InetAddress;
-import java.nio.ByteBuffer;
 import java.nio.charset.StandardCharsets;
 import java.util.*;
 
@@ -20,71 +20,32 @@ public class Resolver {
 
         Random random = new Random();
         int id = random.nextInt(32767);
-        byte[] pack = new Request(domain, id).encode();
+        DNSRequest request = new DNSRequest(id);
+        request.setDomain(domain);
+        byte[] buf = request.encode();
 
         DatagramSocket socket = new DatagramSocket();
-        DatagramPacket dnsReqPacket = new DatagramPacket(pack, pack.length, ipAddress, DNS_SERVER_PORT);
+        DatagramPacket dnsReqPacket = new DatagramPacket(buf, buf.length, ipAddress, DNS_SERVER_PORT);
         socket.send(dnsReqPacket);
+
+
+        System.out.println(id);
+
+
+        buf = new byte[1024];
+        DatagramPacket packet = new DatagramPacket(buf, buf.length);
+        socket.receive(packet);
+
+        id = ((buf[0] & 0xFF) << 8) | (buf[1] & 0xFF);
+
+        DNSResponse response = new DNSResponse(id);
+        response.decode(buf);
+
+
+
+
+
         /*
-        Random random = new Random();
-        short ID = (short)random.nextInt(32767);
-        System.out.println(ID);
-
-
-        ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
-        DataOutputStream dataOutputStream = new DataOutputStream(byteArrayOutputStream);
-
-        short requestFlags = Short.parseShort("0000000100000000", 2);
-        ByteBuffer byteBuffer = ByteBuffer.allocate(2).putShort(requestFlags);
-        byte[] flagsByteArray = byteBuffer.array();
-
-        short QDCOUNT = 1;
-        short ANCOUNT = 0;
-        short NSCOUNT = 0;
-        short ARCOUNT = 0;
-
-        dataOutputStream.writeShort(ID);
-        dataOutputStream.write(flagsByteArray);
-        dataOutputStream.writeShort(QDCOUNT);
-        dataOutputStream.writeShort(ANCOUNT);
-        dataOutputStream.writeShort(NSCOUNT);
-        dataOutputStream.writeShort(ARCOUNT);
-
-
-        String[] domainParts = domain.split("\\.");
-
-        for (int i = 0; i < domainParts.length; i++) {
-            byte[] domainBytes = domainParts[i].getBytes(StandardCharsets.UTF_8);
-            dataOutputStream.writeByte(domainBytes.length);
-            dataOutputStream.write(domainBytes);
-        }
-        // No more parts
-        dataOutputStream.writeByte(0);
-        // Type 0x01 = A (Host Request)
-        dataOutputStream.writeShort(1);
-        // Class 0x01 = IN
-        dataOutputStream.writeShort(1);
-
-        byte[] dnsFrame = byteArrayOutputStream.toByteArray();
-
-        System.out.println("SendataInputStreamg: " + dnsFrame.length + " bytes");
-        for (int i = 0; i < dnsFrame.length; i++) {
-            System.out.print(String.format("%s", dnsFrame[i]) + " ");
-        }
-
-        DatagramSocket socket = new DatagramSocket();
-        DatagramPacket dnsReqPacket = new DatagramPacket(dnsFrame, dnsFrame.length, ipAddress, DNS_SERVER_PORT);
-        socket.send(dnsReqPacket);
-        */
-
-
-
-
-
-
-
-
-
 
         byte[] response = new byte[1024];
         DatagramPacket packet = new DatagramPacket(response, response.length);
@@ -212,5 +173,6 @@ public class Resolver {
         }
 
         domainToIp.forEach((key, value) -> System.out.println(key + " : " + value));
+        */
     }
 }
