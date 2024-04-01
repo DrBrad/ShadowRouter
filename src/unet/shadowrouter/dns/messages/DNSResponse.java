@@ -50,25 +50,22 @@ public class DNSResponse extends MessageBase {
 
         //QNAME
 
-        byte[] qname = new byte[buf[12]];
-        System.arraycopy(buf, 13, qname, 0, qname.length);
-        System.out.println(new String(qname));
+        byte[] qname = null;
 
-        /*
-        while ((recLen = dataInputStream.readByte()) > 0) {
-            byte[] record = new byte[recLen];
-            for (int i = 0; i < recLen; i++) {
-                record[i] = dataInputStream.readByte();
-            }
-            QNAME = new String(record, StandardCharsets.UTF_8);
+        int offset = 12;
+        while(buf[offset] > 0){
+            qname = new byte[buf[offset]];
+            System.arraycopy(buf, offset+1, qname, 0, qname.length);
+            offset += qname.length+1;
         }
-        short QTYPE = dataInputStream.readShort();
-        short QCLASS = dataInputStream.readShort();
+
+        String QNAME = new String(qname);
+        int QTYPE = ((buf[offset+1] & 0xFF) << 8) | (buf[offset+2] & 0xFF);
+        int QCLASS = ((buf[offset+3] & 0xFF) << 8) | (buf[offset+4] & 0xFF);
+
         System.out.println("Record: " + QNAME);
         System.out.println("Record Type: " + String.format("%s", QTYPE));
-        System.out.println("Class: " + String.format("%s", QCLASS));*/
-
-
+        System.out.println("Class: " + String.format("%s", QCLASS));
 
 
         /*

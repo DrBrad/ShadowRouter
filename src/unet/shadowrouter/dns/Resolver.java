@@ -106,11 +106,10 @@ public class Resolver {
         }
         short QTYPE = dataInputStream.readShort();
         short QCLASS = dataInputStream.readShort();
-        System.out.println("Record: " + QNAME);
-        System.out.println("Record Type: " + String.format("%s", QTYPE));
-        System.out.println("Class: " + String.format("%s", QCLASS));
+        //System.out.println("Record: " + QNAME);
+        //System.out.println("Record Type: " + String.format("%s", QTYPE));
+        //System.out.println("Class: " + String.format("%s", QCLASS));
 
-        /*
         System.out.println("\n\nstart answer, authority, and additional sections\n");
 
         byte firstBytes = dataInputStream.readByte();
@@ -179,6 +178,6 @@ public class Resolver {
             firstTwoBits = (firstBytes & 0b11000000) >>> 6;
         }
 
-        domainToIp.forEach((key, value) -> System.out.println(key + " : " + value));*/
+        domainToIp.forEach((key, value) -> System.out.println(key + " : " + value));
     }
 }
