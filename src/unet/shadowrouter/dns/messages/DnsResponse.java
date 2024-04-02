@@ -1,12 +1,8 @@
 package unet.shadowrouter.dns.messages;
 
-import unet.shadowrouter.dns.messages.inter.DnsClass;
-import unet.shadowrouter.dns.messages.inter.MessageBase;
-import unet.shadowrouter.dns.messages.inter.Type;
+import unet.shadowrouter.dns.messages.inter.*;
 import unet.shadowrouter.dns.utils.DnsRecord;
 
-import java.net.InetAddress;
-import java.net.UnknownHostException;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -26,19 +22,7 @@ public class DnsResponse extends MessageBase {
 
     @Override
     public void decode(byte[] buf){
-        int qr = (buf[2] >> 7) & 0x01;
-        int opcode = (buf[2] >> 3) & 0x0F;
-        int aa = (buf[2] >> 2) & 0x01;
-        int tc = (buf[2] >> 1) & 0x01;
-        int rd = buf[2] & 0x01;
-        int ra = (buf[3] >> 7) & 0x01;
-        int z = (buf[3] >> 4) & 0x01;
-        int rcode = buf[3] & 0x0F;
-
-        int qdcount = ((buf[4] & 0xFF) << 8) | (buf[5] & 0xFF);
-        int ancount = ((buf[6] & 0xFF) << 8) | (buf[7] & 0xFF);
-        int nscount = ((buf[8] & 0xFF) << 8) | (buf[9] & 0xFF);
-        int arcount = ((buf[10] & 0xFF) << 8) | (buf[11] & 0xFF);
+        super.decode(buf);
 
         //QNAME
         StringBuilder builder = new StringBuilder();
@@ -53,17 +37,17 @@ public class DnsResponse extends MessageBase {
 
         domain = builder.toString();
 
-        type = Type.getTypeFromCode(((buf[offset+1] & 0xFF) << 8) | (buf[offset+2] & 0xFF));
+        type = Types.getTypeFromCode(((buf[offset+1] & 0xFF) << 8) | (buf[offset+2] & 0xFF));
         dnsClass = DnsClass.getClassFromCode(((buf[offset+3] & 0xFF) << 8) | (buf[offset+4] & 0xFF));
 
         offset += 5;
 
-        for(int i = 0; i < ancount; i++){
+        for(int i = 0; i < anCount; i++){
             switch((buf[offset] & 0b11000000) >>> 6){
                 case 3:
                     byte current = buf[offset+1];
 
-                    Type type = Type.getTypeFromCode(((buf[offset+2] & 0xFF) << 8) | (buf[offset+3] & 0xFF));
+                    Types type = Types.getTypeFromCode(((buf[offset+2] & 0xFF) << 8) | (buf[offset+3] & 0xFF));
 
                     DnsClass dnsClass = DnsClass.getClassFromCode(((buf[offset+4] & 0xFF) << 8) | (buf[offset+5] & 0xFF));
 

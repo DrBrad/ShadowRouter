@@ -1,6 +1,8 @@
 package unet.shadowrouter.dns.messages.inter;
 
-public enum Type {
+public enum Types {
+
+    //Type - 16 bit field
 
     A {
         public int getCode(){
@@ -53,8 +55,8 @@ public enum Type {
         }
     }, INVALID;
 
-    public static Type getTypeFromCode(int code){
-        for(Type type : values()){
+    public static Types getTypeFromCode(int code){
+        for(Types type : values()){
             if(code == type.getCode()){
                 return type;
             }

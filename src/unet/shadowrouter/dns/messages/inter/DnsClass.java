@@ -2,6 +2,8 @@ package unet.shadowrouter.dns.messages.inter;
 
 public enum DnsClass {
 
+    //CLASS - 16 bit field
+
     IN {
         public int getCode(){
             return 1;

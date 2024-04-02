@@ -2,8 +2,6 @@ package unet.shadowrouter.dns;
 
 import unet.shadowrouter.dns.messages.DnsRequest;
 import unet.shadowrouter.dns.messages.DnsResponse;
-import unet.shadowrouter.dns.messages.inter.DnsClass;
-import unet.shadowrouter.dns.messages.inter.Type;
 import unet.shadowrouter.dns.utils.DnsRecord;
 
 import java.io.*;
@@ -17,7 +15,8 @@ public class Resolver {
     public static final int DNS_SERVER_PORT = 53;
 
     public Resolver(String domain)throws IOException {
-        InetAddress ipAddress = InetAddress.getByName("1.1.1.1");
+        //InetAddress ipAddress = InetAddress.getByName("1.1.1.1");
+        InetAddress ipAddress = InetAddress.getByName("8.8.8.8");
 
 
         Random random = new Random();

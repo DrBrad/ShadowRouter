@@ -1,7 +1,7 @@
 package unet.shadowrouter.dns.utils;
 
 import unet.shadowrouter.dns.messages.inter.DnsClass;
-import unet.shadowrouter.dns.messages.inter.Type;
+import unet.shadowrouter.dns.messages.inter.Types;
 
 import java.net.InetAddress;
 import java.net.UnknownHostException;
@@ -9,11 +9,11 @@ import java.net.UnknownHostException;
 public class DnsRecord {
 
     private InetAddress address;
-    private Type type;
+    private Types type;
     private DnsClass dnsClass;
     private int ttl;
 
-    public DnsRecord(byte[] addr, Type type, DnsClass dnsClass, int ttl){
+    public DnsRecord(byte[] addr, Types type, DnsClass dnsClass, int ttl){
         try{
             address = InetAddress.getByAddress(addr);
             this.type = type;
@@ -24,7 +24,7 @@ public class DnsRecord {
         }
     }
 
-    public DnsRecord(InetAddress address, Type type, DnsClass dnsClass, int ttl){
+    public DnsRecord(InetAddress address, Types type, DnsClass dnsClass, int ttl){
         this.address = address;
         this.type = type;
         this.dnsClass = dnsClass;
@@ -39,11 +39,11 @@ public class DnsRecord {
         return address;
     }
 
-    public void setType(Type type){
+    public void setType(Types type){
         this.type = type;
     }
 
-    public Type getType(){
+    public Types getType(){
         return type;
     }
 
