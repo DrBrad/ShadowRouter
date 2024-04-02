@@ -7,10 +7,10 @@ public class MessageBase {
     protected Types type = Types.A;
     protected OpCodes opCode = OpCodes.QUERY;
     protected DnsClass dnsClass = DnsClass.IN;
+    protected ResponseCodes responseCode = ResponseCodes.NO_ERROR;
 
     protected boolean qr, authoritative, truncated, recursionDesired, recursionAvailable;
     protected int qdCount, anCount, nsCount, arCount;
-    protected ResponseCodes responseCode = ResponseCodes.NO_ERROR;
 
     public byte[] encode(){
         byte[] buf = new byte[getLength()];
