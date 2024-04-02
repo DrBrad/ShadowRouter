@@ -26,6 +26,7 @@ public class RelayTest {
 
 
         Resolver resolver = new Resolver("flixbox.tv");
+        //Resolver resolver = new Resolver("172.67.74.70");
 
 
 

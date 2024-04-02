@@ -14,7 +14,7 @@ public class Resolver {
 
     public static final int DNS_SERVER_PORT = 53;
 
-    public Resolver(String domain)throws IOException {
+    public Resolver(String query)throws IOException {
         InetAddress ipAddress = InetAddress.getByName("1.1.1.1");
         //InetAddress ipAddress = InetAddress.getByName("8.8.8.8");
 
@@ -22,7 +22,7 @@ public class Resolver {
         Random random = new Random();
         int id = random.nextInt(32767);
         DnsRequest request = new DnsRequest(id);
-        request.setDomain(domain);
+        request.setQuery(query);
         byte[] buf = request.encode();
 
         DatagramSocket socket = new DatagramSocket();
@@ -42,7 +42,7 @@ public class Resolver {
         DnsResponse response = new DnsResponse(id);
         response.decode(buf);
 
-        System.out.println(response.getDomain());
+        System.out.println(response.getQuery());
         System.out.println(response.getResponseCode());
         for(DnsRecord record : response.getRecords()){
             System.out.println("Address: "+record.getAddress().getHostAddress()+" Type: "+record.getType()+" Class: "+record.getDnsClass()+" TTL: "+record.getTTL());

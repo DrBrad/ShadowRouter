@@ -3,7 +3,7 @@ package unet.shadowrouter.dns.messages.inter;
 public class MessageBase {
 
     protected int id;
-    protected String domain;
+    protected String query;
     protected Types type = Types.A;
     protected OpCodes opCode = OpCodes.QUERY;
     protected DnsClass dnsClass = DnsClass.IN;
@@ -78,12 +78,12 @@ public class MessageBase {
         return id;
     }
 
-    public void setDomain(String domain){
-        this.domain = domain;
+    public void setQuery(String query){
+        this.query = query;
     }
 
-    public String getDomain(){
-        return domain;
+    public String getQuery(){
+        return query;
     }
 
     public void setType(Types type){
@@ -100,6 +100,14 @@ public class MessageBase {
 
     public DnsClass getDnsClass(){
         return dnsClass;
+    }
+
+    public void setOpCode(OpCodes opCode){
+        this.opCode = opCode;
+    }
+
+    public OpCodes getOpCode(){
+        return opCode;
     }
 
     public void setAuthoritative(boolean authoritative){

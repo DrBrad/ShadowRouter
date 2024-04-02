@@ -35,7 +35,7 @@ public class DnsResponse extends MessageBase {
             offset += buf[offset]+1;
         }
 
-        domain = builder.toString();
+        query = builder.toString();
 
         type = Types.getTypeFromCode(((buf[offset+1] & 0xFF) << 8) | (buf[offset+2] & 0xFF));
         dnsClass = DnsClass.getClassFromCode(((buf[offset+3] & 0xFF) << 8) | (buf[offset+4] & 0xFF));
