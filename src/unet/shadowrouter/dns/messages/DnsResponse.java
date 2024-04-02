@@ -41,6 +41,7 @@ public class DnsResponse extends MessageBase {
         dnsClass = DnsClass.getClassFromCode(((buf[offset+3] & 0xFF) << 8) | (buf[offset+4] & 0xFF));
 
         offset += 5;
+        System.out.println(domain+"  "+type+"  "+dnsClass+"  "+anCount);
 
         for(int i = 0; i < anCount; i++){
             switch((buf[offset] & 0b11000000) >>> 6){

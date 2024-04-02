@@ -1,8 +1,6 @@
 package unet.shadowrouter.dns.messages;
 
 import unet.shadowrouter.dns.messages.inter.MessageBase;
-import unet.shadowrouter.dns.messages.inter.OpCodes;
-import unet.shadowrouter.dns.messages.inter.ResponseCodes;
 
 import java.nio.charset.StandardCharsets;
 
