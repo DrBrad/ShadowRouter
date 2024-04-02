@@ -4,6 +4,7 @@ import unet.shadowrouter.dns.messages.DnsRequest;
 import unet.shadowrouter.dns.messages.DnsResponse;
 import unet.shadowrouter.dns.messages.inter.DnsClass;
 import unet.shadowrouter.dns.messages.inter.Type;
+import unet.shadowrouter.dns.utils.DnsRecord;
 
 import java.io.*;
 import java.net.DatagramPacket;
@@ -23,8 +24,6 @@ public class Resolver {
         int id = random.nextInt(32767);
         DnsRequest request = new DnsRequest(id);
         request.setDomain(domain);
-        request.setType(Type.A);
-        request.setDnsClass(DnsClass.IN);
         byte[] buf = request.encode();
 
         DatagramSocket socket = new DatagramSocket();
@@ -38,11 +37,15 @@ public class Resolver {
         buf = new byte[1024];
         DatagramPacket packet = new DatagramPacket(buf, buf.length);
         socket.receive(packet);
-        System.out.println(packet.getLength());
 
         id = ((buf[0] & 0xFF) << 8) | (buf[1] & 0xFF);
 
         DnsResponse response = new DnsResponse(id);
         response.decode(buf);
+
+        System.out.println(response.getDomain());
+        for(DnsRecord record : response.getRecords()){
+            System.out.println("Address: "+record.getAddress().getHostAddress()+" Type: "+record.getType()+" Class: "+record.getDnsClass()+" TTL: "+record.getTTL());
+        }
     }
 }

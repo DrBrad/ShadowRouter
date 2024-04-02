@@ -1,16 +1,10 @@
 package unet.shadowrouter.dns.messages;
 
-import unet.shadowrouter.dns.messages.inter.DnsClass;
 import unet.shadowrouter.dns.messages.inter.MessageBase;
-import unet.shadowrouter.dns.messages.inter.Type;
 
 import java.nio.charset.StandardCharsets;
 
 public class DnsRequest extends MessageBase {
-
-    private String domain;
-    private Type type;
-    private DnsClass dnsClass;
 
     public DnsRequest(){
     }
@@ -63,7 +57,7 @@ public class DnsRequest extends MessageBase {
         // Query section
         int offset = 12; // Start of query section
 
-        for (String part : domain.split("\\.")) {
+        for(String part : domain.split("\\.")){
             byte[] domainBytes = part.getBytes(StandardCharsets.UTF_8);
             dnsFrame[offset] = (byte) domainBytes.length;
             System.arraycopy(domainBytes, 0, dnsFrame, offset+1, domainBytes.length);
@@ -91,29 +85,5 @@ public class DnsRequest extends MessageBase {
     @Override
     public void decode(byte[] buf){
 
-    }
-
-    public void setDomain(String domain){
-        this.domain = domain;
-    }
-
-    public String getDomain(){
-        return domain;
-    }
-
-    public void setType(Type type){
-        this.type = type;
-    }
-
-    public Type getType(){
-        return type;
-    }
-
-    public void setDnsClass(DnsClass dnsClass){
-        this.dnsClass = dnsClass;
-    }
-
-    public DnsClass getDnsClass(){
-        return dnsClass;
     }
 }
