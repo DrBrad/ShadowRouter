@@ -1,21 +1,9 @@
 package unet.shadowrouter;
 
-import unet.kad4.Kademlia;
 import unet.kad4.kad.KademliaBase;
-import unet.shadowrouter.dns.Resolver;
 import unet.shadowrouter.proxy.socks.SocksProxyServer;
 
-import javax.net.ssl.KeyManagerFactory;
-import javax.net.ssl.SSLContext;
-import javax.net.ssl.SSLSocket;
-import javax.net.ssl.SSLSocketFactory;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.OutputStream;
 import java.net.*;
-import java.nio.ByteBuffer;
-import java.security.KeyPair;
-import java.security.PublicKey;
 import java.util.*;
 
 public class RelayTest {
