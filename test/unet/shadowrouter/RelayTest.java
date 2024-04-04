@@ -25,12 +25,6 @@ public class RelayTest {
     public static void main(String[] args)throws Exception {
 
 
-        Resolver resolver = new Resolver("flixbox.tv");
-        //Resolver resolver = new Resolver("172.67.74.70");
-
-
-
-        /*
         ShadowRouter router = new ShadowRouter();
         router.startRelay(7000);
         router.bind(6000);
@@ -41,7 +35,7 @@ public class RelayTest {
 
         List<KademliaBase> nodes = new ArrayList<>();
 
-        for(int i = 1; i < 2; i++){
+        for(int i = 1; i < 62; i++){
             ShadowRouter r = new ShadowRouter();
             r.startRelay(7000+i);
             r.join(6000+i, InetAddress.getLoopbackAddress(), 6000+(i-1));
@@ -68,6 +62,6 @@ public class RelayTest {
             }
 
             i++;
-        }*/
+        }
     }
 }
