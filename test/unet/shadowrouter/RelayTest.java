@@ -9,6 +9,7 @@ import java.util.*;
 public class RelayTest {
 
     //IF COMMAND NOT FOUND - SEND ERROR RESPONSE...
+    //FIX DNS CNAME ISSUES
 
     public static void main(String[] args)throws Exception {
 
