@@ -1,9 +1,9 @@
 package unet.shadowrouter.tunnel.tcp;
 
+import unet.kad4.utils.net.AddressType;
 import unet.kad4.utils.net.AddressUtils;
 import unet.shadowrouter.kad.utils.KeyUtils;
 import unet.shadowrouter.kad.utils.SecureNode;
-import unet.shadowrouter.tunnel.inter.AddressType;
 import unet.shadowrouter.tunnel.inter.Command;
 
 import javax.crypto.*;
@@ -13,6 +13,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.net.Inet4Address;
+import java.net.InetAddress;
 import java.net.InetSocketAddress;
 import java.net.Socket;
 import java.security.*;
@@ -59,7 +60,7 @@ public class Tunnel {
     public void relay(SecureNode node)throws IOException, NoSuchAlgorithmException, InvalidKeyException, SignatureException,
             InvalidKeySpecException, NoSuchPaddingException, InvalidAlgorithmParameterException {
         out.write(Command.RESOLVE_PORT.getCode());
-        out.write((node.getHostAddress() instanceof Inet4Address) ? AddressType.IPv4.getCode() : AddressType.IPv6.getCode());
+        out.write(node.getHostAddress().getAddress().length);
         out.write(AddressUtils.packAddress(node.getAddress()));
         out.flush();
 
@@ -71,26 +72,10 @@ public class Tunnel {
     }
 
     //WE ARE NOT USING INET ADDRESS AS IT IMMEDIATLY DNS RESOLVES DOMAINS
-    public void exit(byte[] address, int port, AddressType type)throws IOException {
+    public void exit(InetSocketAddress address)throws IOException {
         out.write(Command.RELAY.getCode());
-        out.write(type.getCode());
-
-        switch(type){
-            case IPv4:
-            case IPv6:
-                out.write(address);
-                break;
-
-            case DOMAIN:
-                out.write((byte) address.length);
-                out.write(address);
-                break;
-        }
-
-        out.write(new byte[]{
-                (byte) ((port & 0xff00) >> 8),
-                (byte) (port & 0xff)
-        });
+        out.write((address.getAddress() instanceof Inet4Address) ? AddressType.IPv4.getAddressLength() : AddressType.IPv6.getAddressLength());
+        out.write(AddressUtils.packAddress(address));
 
         out.flush();
 

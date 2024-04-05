@@ -8,18 +8,25 @@ import unet.kad4.utils.Node;
 import unet.shadowrouter.kad.messages.GetPortRequest;
 import unet.shadowrouter.kad.messages.GetPortResponse;
 import unet.shadowrouter.kad.utils.SecureNode;
+import unet.shadowrouter.proxy.dns.messages.MessageBase;
+import unet.shadowrouter.proxy.dns.messages.inter.DnsClass;
+import unet.shadowrouter.proxy.dns.messages.inter.Types;
+import unet.shadowrouter.proxy.dns.records.AAAARecord;
+import unet.shadowrouter.proxy.dns.records.ARecord;
+import unet.shadowrouter.proxy.dns.records.inter.DnsRecord;
+import unet.shadowrouter.proxy.dns.utils.DnsQuery;
 import unet.shadowrouter.proxy.socks.SocksProxy;
 import unet.shadowrouter.proxy.socks.socks.inter.AType;
 import unet.shadowrouter.proxy.socks.socks.inter.Command;
 import unet.shadowrouter.proxy.socks.socks.inter.ReplyCode;
 import unet.shadowrouter.proxy.socks.socks.inter.SocksBase;
-import unet.shadowrouter.tunnel.inter.AddressType;
 import unet.shadowrouter.tunnel.tcp.Tunnel;
 
 import java.io.IOException;
 import java.net.*;
 import java.util.Collections;
 import java.util.List;
+import java.util.Random;
 
 public class Socks5 extends SocksBase {
 
@@ -53,13 +60,12 @@ public class Socks5 extends SocksBase {
         //RSV
         proxy.getInputStream().read();
 
-        AType atype = AType.getATypeFromCode((byte) proxy.getInputStream().read());
+        atype = AType.getATypeFromCode((byte) proxy.getInputStream().read());
         //byte[] addr;
         //InetAddress address;
 
         switch(atype){
             case IPv4:
-                this.atype = AddressType.IPv4;
                 address = new byte[atype.getLength()];
                 proxy.getInputStream().read(address);
                 //address = InetAddress.getByAddress(addr);
@@ -67,7 +73,6 @@ public class Socks5 extends SocksBase {
                 break;
 
             case DOMAIN:
-                this.atype = AddressType.DOMAIN;
                 address = new byte[proxy.getInputStream().read()];
                 proxy.getInputStream().read(address);
                 //System.out.println(new String(addr));
@@ -75,7 +80,6 @@ public class Socks5 extends SocksBase {
                 break;
 
             case IPv6:
-                this.atype = AddressType.IPv6;
                 address = new byte[atype.getLength()];
                 proxy.getInputStream().read(address);
                 //address = InetAddress.getByAddress(addr);
@@ -96,29 +100,53 @@ public class Socks5 extends SocksBase {
     @Override
     public void connect()throws IOException {
         try{
-            /*
-            Socket socket = new Socket();
+            InetAddress address = null;
 
-            InetSocketAddress address;
             switch(atype){
-                case IPv4:
-                case IPv6:
-                    address = new InetSocketAddress(InetAddress.getByAddress(this.address), port);
-                    break;
-
                 case DOMAIN:
-                    address = new InetSocketAddress(InetAddress.getByName(new String(this.address)), port);
+                    DatagramSocket socket = new DatagramSocket();
+
+                    MessageBase request = new MessageBase();
+                    int id = new Random().nextInt(32767);
+                    request.setID(id);
+                    request.addQuery(new DnsQuery(new String(this.address), Types.A, DnsClass.IN));
+                    request.setDestination(InetAddress.getByName("1.1.1.1"), 53);
+
+                    byte[] data = request.encode();
+
+                    socket.send(new DatagramPacket(data, data.length, request.getDestinationAddress(), request.getDestinationPort()));
+
+                    DatagramPacket packet = new DatagramPacket(new byte[1024], 1024);
+                    socket.receive(packet);
+
+                    MessageBase response = new MessageBase();
+                    response.decode(packet.getData());
+
+                    for(DnsRecord record : response.getAnswers()){
+                        if(record.getType() == Types.A){
+                            address = ((ARecord) record).getAddress();
+                            break;
+                        }
+
+                        if(record.getType() == Types.AAAA){
+                            address = ((AAAARecord) record).getAddress();
+                            break;
+                        }
+                    }
+
                     break;
 
                 default:
-                    return;
+                    address = InetAddress.getByAddress(this.address);
+                    break;
             }
 
-            socket.connect(address);
-            replyCommand(ReplyCode.GRANTED, address);
+            if(address == null){
+                return;
+            }
 
-            relay(socket);
-            */
+            InetAddress b = address;
+
 
             List<Node> nodes = proxy.getKademlia().getRoutingTable().getAllNodes();
             if(nodes.size() < 3){
@@ -141,7 +169,7 @@ public class Socks5 extends SocksBase {
                         tunnel.connect((SecureNode) nodes.get(0), response.getPort()); //ENTRY
                         tunnel.relay((SecureNode) nodes.get(1));
                         tunnel.relay((SecureNode) nodes.get(2));
-                        tunnel.exit(address, port, atype);
+                        tunnel.exit(new InetSocketAddress(b, port));
 
                         replyCommand(ReplyCode.GRANTED);
 
@@ -160,7 +188,7 @@ public class Socks5 extends SocksBase {
                                 nodes.get(0).getUID()+" > "+
                                 nodes.get(1).getUID()+" > "+
                                 nodes.get(2).getUID()+" > "+
-                                new String(address)+" : "+port);
+                                new String(Socks5.this.address)+" > "+b.getHostAddress()+" : "+port);
                         relay(tunnel);
 
                     }catch(Exception e){

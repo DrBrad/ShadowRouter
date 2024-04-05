@@ -6,17 +6,28 @@ import unet.kad4.refresh.RefreshHandler;
 import unet.kad4.routing.BucketTypes;
 import unet.kad4.routing.inter.RoutingTable;
 import unet.kad4.rpc.KRequestListener;
+import unet.kad4.rpc.events.ErrorResponseEvent;
+import unet.kad4.rpc.events.ResponseEvent;
+import unet.kad4.rpc.events.StalledEvent;
+import unet.kad4.rpc.events.inter.ResponseCallback;
+import unet.kad4.utils.Node;
 import unet.shadowrouter.kad.JoinNodeListener;
 import unet.shadowrouter.kad.SRequestListener;
 import unet.shadowrouter.kad.ShadowServer;
 import unet.shadowrouter.kad.messages.*;
 import unet.shadowrouter.kad.refresh.BucketRefreshTask;
 import unet.shadowrouter.kad.refresh.StaleRefreshTask;
+import unet.shadowrouter.kad.utils.SecureNode;
+import unet.shadowrouter.proxy.socks.socks.inter.ReplyCode;
 import unet.shadowrouter.tunnel.tcp.RelayServer;
+import unet.shadowrouter.tunnel.tcp.Tunnel;
 
 import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
 import java.net.InetSocketAddress;
+import java.net.Socket;
+import java.util.Collections;
+import java.util.List;
 
 public class ShadowRouter extends KademliaBase {
 
@@ -96,4 +107,78 @@ public class ShadowRouter extends KademliaBase {
             e.printStackTrace();
         }
     }
+
+    /*
+    public void tcpRelay(Socket socket, )throws IOException {
+            List<Node> nodes = getRoutingTable().getAllNodes();
+            if(nodes.size() < 3){
+                //socket.replyCommand(ReplyCode.GENERAL_FAILURE);
+                throw new IOException("Not enough nodes to relay off of.");
+            }
+
+            Collections.shuffle(nodes);
+
+
+            GetPortRequest request = new GetPortRequest();
+            request.setDestination(nodes.get(0).getAddress());
+            server.send(request, new ResponseCallback(){
+                @Override
+                public void onResponse(ResponseEvent event){
+                    GetPortResponse response = (GetPortResponse) event.getMessage();
+
+                    Tunnel tunnel = new Tunnel();
+                    try{
+                        tunnel.connect((SecureNode) nodes.get(0), response.getPort()); //ENTRY
+                        tunnel.relay((SecureNode) nodes.get(1));
+                        tunnel.relay((SecureNode) nodes.get(2));
+                        tunnel.exit(address, port, atype);
+
+                        replyCommand(ReplyCode.GRANTED);
+
+                    }catch(Exception e){
+                        try{
+                            replyCommand(ReplyCode.HOST_UNREACHABLE);//, address);
+                            proxy.getSocket().close();
+
+                        }catch(IOException ex){
+                        }
+                        return;
+                    }
+
+                    try{
+                        System.out.println(
+                                nodes.get(0).getUID()+" > "+
+                                        nodes.get(1).getUID()+" > "+
+                                        nodes.get(2).getUID()+" > "+
+                                        new String(address)+" : "+port);
+                        relay(tunnel);
+
+                    }catch(Exception e){
+                    }
+                }
+
+                @Override
+                public void onErrorResponse(ErrorResponseEvent event){
+                    try{
+                        System.out.println("ERROR - GET_PORT");
+                        replyCommand(ReplyCode.GENERAL_FAILURE);//, address);
+                        proxy.getSocket().close();
+
+                    }catch(IOException e){
+                    }
+                }
+
+                @Override
+                public void onStalled(StalledEvent event){
+                    try{
+                        System.out.println("Stalled - GET_PORT");
+                        replyCommand(ReplyCode.GENERAL_FAILURE);//, address);
+                        proxy.getSocket().close();
+
+                    }catch(IOException e){
+                    }
+                }
+            });
+    }
+    */
 }

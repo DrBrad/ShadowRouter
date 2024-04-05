@@ -5,12 +5,12 @@ import unet.kad4.rpc.events.ErrorResponseEvent;
 import unet.kad4.rpc.events.ResponseEvent;
 import unet.kad4.rpc.events.StalledEvent;
 import unet.kad4.rpc.events.inter.ResponseCallback;
+import unet.kad4.utils.net.AddressType;
 import unet.kad4.utils.net.AddressUtils;
 import unet.shadowrouter.kad.ShadowServer;
 import unet.shadowrouter.kad.messages.GetPortRequest;
 import unet.shadowrouter.kad.messages.GetPortResponse;
 import unet.shadowrouter.kad.utils.KeyUtils;
-import unet.shadowrouter.tunnel.inter.AddressType;
 import unet.shadowrouter.tunnel.inter.Command;
 
 import javax.crypto.*;
@@ -51,36 +51,10 @@ public class Relay implements Runnable {
             handshake();
 
             Command command = Command.getCommandFromCode((byte) in.read());
-            AddressType atype = AddressType.getAddressTypeFromCode((byte) in.read());
-            byte[] addr;
-            InetSocketAddress address;
 
-            switch(atype){
-                case IPv4:
-                    addr = new byte[atype.getLength()];
-                    in.read(addr);
-                    address = AddressUtils.unpackAddress(addr);
-                    //System.out.println(address.getAddress().getHostAddress()+" "+address.getPort()+" - IPv4");
-                    break;
-
-                case IPv6:
-                    addr = new byte[atype.getLength()];
-                    in.read(addr);
-                    address = AddressUtils.unpackAddress(addr);
-                    //System.out.println(address.getAddress().getHostAddress()+" "+address.getPort()+" - IPv6");
-                    break;
-
-                case DOMAIN:
-                    addr = new byte[in.read()];
-                    in.read(addr);
-                    address = new InetSocketAddress(InetAddress.getByName(new String(addr)), ((in.read() << 8) | in.read() & 0xff));
-                    //System.out.println(new String(addr)+" "+address.getPort()+" - DOMAIN");
-                    break;
-
-                default:
-                    socket.close();
-                    return;
-            }
+            byte[] addr = new byte[in.read()+2];
+            in.read(addr);
+            InetSocketAddress address = AddressUtils.unpackAddress(addr);
 
             switch(command){
                 case RESOLVE_PORT:
