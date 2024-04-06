@@ -56,6 +56,12 @@ public class Relay implements Runnable {
             in.read(addr);
             InetSocketAddress address = AddressUtils.unpackAddress(addr);
 
+            if(AddressUtils.isBogon(address)){
+                //IF ACCEPTED EXIT...
+
+                //REPLY THAT GONNA BE A NO BRO
+            }
+
             switch(command){
                 case RESOLVE_PORT:
                     resolve(address);
