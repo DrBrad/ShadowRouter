@@ -110,7 +110,7 @@ public class Socks5 extends SocksBase {
                     int id = new Random().nextInt(32767);
                     request.setID(id);
                     request.addQuery(new DnsQuery(new String(this.address), Types.A, DnsClass.IN));
-                    request.setDestination(InetAddress.getByName("1.1.1.1"), 53);
+                    request.setDestination(InetAddress.getByName("8.8.8.8"), 53);
 
                     byte[] data = request.encode();
 
@@ -123,7 +123,7 @@ public class Socks5 extends SocksBase {
                     response.decode(packet.getData());
 
                     if(response.getAnswers().size() < 1){
-                        System.out.println(new String(this.address));
+                        System.out.println(request.getResponseCode()+"  "+new String(this.address));
                     }
 
                     for(DnsRecord record : response.getAnswers()){
