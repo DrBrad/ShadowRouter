@@ -122,6 +122,10 @@ public class Socks5 extends SocksBase {
                     MessageBase response = new MessageBase();
                     response.decode(packet.getData());
 
+                    if(response.getAnswers().size() < 1){
+                        System.out.println(new String(this.address));
+                    }
+
                     for(DnsRecord record : response.getAnswers()){
                         if(record.getType() == Types.A){
                             address = ((ARecord) record).getAddress();
