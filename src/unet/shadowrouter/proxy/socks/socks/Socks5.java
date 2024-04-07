@@ -8,13 +8,6 @@ import unet.kad4.utils.Node;
 import unet.shadowrouter.kad.messages.GetPortRequest;
 import unet.shadowrouter.kad.messages.GetPortResponse;
 import unet.shadowrouter.kad.utils.SecureNode;
-import unet.shadowrouter.proxy.dns.messages.MessageBase;
-import unet.shadowrouter.proxy.dns.messages.inter.DnsClass;
-import unet.shadowrouter.proxy.dns.messages.inter.Types;
-import unet.shadowrouter.proxy.dns.records.AAAARecord;
-import unet.shadowrouter.proxy.dns.records.ARecord;
-import unet.shadowrouter.proxy.dns.records.inter.DnsRecord;
-import unet.shadowrouter.proxy.dns.utils.DnsQuery;
 import unet.shadowrouter.proxy.socks.SocksProxy;
 import unet.shadowrouter.proxy.socks.socks.inter.AType;
 import unet.shadowrouter.proxy.socks.socks.inter.Command;
@@ -104,39 +97,6 @@ public class Socks5 extends SocksBase {
 
             switch(atype){
                 case DOMAIN:
-                    DatagramSocket socket = new DatagramSocket();
-
-                    MessageBase request = new MessageBase();
-                    int id = new Random().nextInt(32767);
-                    request.setID(id);
-                    request.addQuery(new DnsQuery(new String(this.address), Types.A, DnsClass.IN));
-                    request.setDestination(InetAddress.getByName("8.8.8.8"), 53);
-
-                    byte[] data = request.encode();
-
-                    socket.send(new DatagramPacket(data, data.length, request.getDestinationAddress(), request.getDestinationPort()));
-
-                    DatagramPacket packet = new DatagramPacket(new byte[1024], 1024);
-                    socket.receive(packet);
-
-                    MessageBase response = new MessageBase();
-                    response.decode(packet.getData());
-
-                    if(response.getAnswers().size() < 1){
-                        System.out.println(request.getResponseCode()+"  "+new String(this.address));
-                    }
-
-                    for(DnsRecord record : response.getAnswers()){
-                        if(record.getType() == Types.A){
-                            address = ((ARecord) record).getAddress();
-                            break;
-                        }
-
-                        if(record.getType() == Types.AAAA){
-                            address = ((AAAARecord) record).getAddress();
-                            break;
-                        }
-                    }
 
                     break;
 
