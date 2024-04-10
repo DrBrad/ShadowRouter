@@ -12,7 +12,6 @@ public class RelayTest {
     //FIX DNS CNAME ISSUES
 
     public static void main(String[] args)throws Exception {
-        /*
         ShadowRouter router = new ShadowRouter();
         router.startRelay(7000);
         router.bind(6000);
@@ -51,6 +50,5 @@ public class RelayTest {
 
             i++;
         }
-        */
     }
 }

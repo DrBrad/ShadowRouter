@@ -30,8 +30,6 @@ import static unet.kad4.messages.inter.MessageBase.TID_KEY;
 
 public class ShadowServer extends Server {
 
-    public static final int PUBLIC_KEY_LENGTH = 294;
-
     private KeyPair keyPair;
 
     public ShadowServer(KademliaBase kademlia){

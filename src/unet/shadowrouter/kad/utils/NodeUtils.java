@@ -10,34 +10,48 @@ import java.util.ArrayList;
 import java.util.List;
 
 import static unet.kad4.utils.UID.ID_LENGTH;
-import static unet.shadowrouter.kad.ShadowServer.PUBLIC_KEY_LENGTH;
 
 public class NodeUtils {
 
     public static byte[] packNodes(List<SecureNode> nodes, AddressType type){
-        byte[] buf = new byte[nodes.size()*(ID_LENGTH+PUBLIC_KEY_LENGTH+type.getAddressLength()+2)];
-        int position = 0;
+        byte[][] buf = new byte[nodes.size()][];
+        //byte[] buf = new byte[nodes.size()*(ID_LENGTH+PUBLIC_KEY_LENGTH+type.getAddressLength()+2)];
+        //int position = 0;
+        int length = 0;
 
-        for(SecureNode n : nodes){
-            byte[] bid = n.getUID().getBytes();
-            System.arraycopy(bid, 0, buf, position, bid.length);
-            position += bid.length;
+        for(int i = 0; i < nodes.size(); i++){
+            byte[] key = nodes.get(i).getPublicKey().getEncoded();
+            buf[i] = new byte[ID_LENGTH+type.getAddressLength()+key.length+4];
+            length += buf[0].length;
 
-            byte[] addr = n.getHostAddress().getAddress();
-            System.arraycopy(addr, 0, buf, position, addr.length);
-            position += addr.length;
+            byte[] bid = nodes.get(i).getUID().getBytes();
+            System.arraycopy(bid, 0, buf[i], 0, bid.length);
+            int offset = bid.length;
+
+            byte[] addr = nodes.get(i).getHostAddress().getAddress();
+            System.arraycopy(addr, 0, buf[i], offset, addr.length);
+            offset += addr.length;
 
             //PORT TIME...
-            buf[position] = (byte) ((n.getPort() >> 8) & 0xff);
-            buf[position+1] = (byte) (n.getPort() & 0xff);
-            position += 2;
+            buf[i][offset] = (byte) ((nodes.get(i).getPort() >> 8) & 0xff);
+            buf[i][offset+1] = (byte) (nodes.get(i).getPort() & 0xff);
+            offset += 2;
 
-            byte[] key = n.getPublicKey().getEncoded();
-            System.arraycopy(key, 0, buf, position, key.length);
-            position += key.length;
+
+            buf[i][offset] = (byte) ((key.length >> 8) & 0xff);
+            buf[i][offset+1] = (byte) (key.length & 0xff);
+
+            System.arraycopy(key, 0, buf[i], offset+2, key.length);
         }
 
-        return buf;
+        byte[] data = new byte[length];
+        int offset = 0;
+        for(byte[] b : buf){
+            System.arraycopy(b, 0, data, offset, b.length);
+            offset += b.length;
+        }
+
+        return data;
     }
 
     public static List<SecureNode> unpackNodes(byte[] buf, AddressType type){
@@ -45,7 +59,7 @@ public class NodeUtils {
 
         byte[] bid = new byte[ID_LENGTH];
         byte[] addr = new byte[type.getAddressLength()];
-        byte[] key = new byte[PUBLIC_KEY_LENGTH];
+        byte[] key;
         int position = 0;
         int port;
 
@@ -59,8 +73,9 @@ public class NodeUtils {
             port = ((buf[position] & 0xff) << 8) | (buf[position+1] & 0xff);
             position += 2;
 
-            System.arraycopy(buf, position, key, 0, key.length);
-            position += key.length;
+            key = new byte[((buf[position] & 0xff) << 8) | (buf[position+1] & 0xff)];
+            System.arraycopy(buf, position+2, key, 0, key.length);
+            position += key.length+2;
 
             try{
                 nodes.add(new SecureNode(bid, InetAddress.getByAddress(addr), port, KeyUtils.decodePublic(key, "RSA")));
