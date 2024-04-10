@@ -22,7 +22,7 @@ public class NodeUtils {
         for(int i = 0; i < nodes.size(); i++){
             byte[] key = nodes.get(i).getPublicKey().getEncoded();
             buf[i] = new byte[ID_LENGTH+type.getAddressLength()+key.length+4];
-            length += buf[0].length;
+            length += buf[i].length;
 
             byte[] bid = nodes.get(i).getUID().getBytes();
             System.arraycopy(bid, 0, buf[i], 0, bid.length);
